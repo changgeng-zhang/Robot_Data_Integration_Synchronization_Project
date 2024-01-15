@@ -1,0 +1,35 @@
+# Robot Framework specific
+__pycache__/
+/*.pyc
+/*.pyo
+/*.pyd
+*.pyc
+*.pyo
+*.pyd
+
+# Logs and reports
+/log.html
+/report.html
+/output.xml
+
+# Test results
+/results/
+
+# Virtual environment
+/venv/
+/.venv/
+
+# Miscellaneous
+.DS_Store
+*.log
+*.swp
+*.swo
+*.db
+*.sqlite
+# *.xlsx
+
+# IDE specific
+.vscode/
+.idea/
+*.sublime-*
+*.sublime-workspace
