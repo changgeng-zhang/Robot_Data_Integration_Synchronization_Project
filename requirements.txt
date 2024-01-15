@@ -1,0 +1,7 @@
+robotframework
+robotframework-seleniumlibrary
+robotframework-excellib
+requests
+tenacity
+openpyxl
+pandas

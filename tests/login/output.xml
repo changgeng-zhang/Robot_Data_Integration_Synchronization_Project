@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 6.1.1 (Python 3.12.1 on darwin)" generated="20231224 14:48:31.465" rpa="false" schemaversion="4">
+<suite id="s1" name="Test Login" source="/Users/changgeng.zhang/workspace/pay trial/Robotic Process Automation/tests/login/test_login.robot">
+<test id="s1-t1" name="Login Test" line="7">
+<kw name="Open Browser" library="SeleniumLibrary">
+<arg>${LOGIN_URL}</arg>
+<arg>${BROWSER}</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<msg timestamp="20231224 14:48:31.692" level="INFO">Opening browser 'chrome' to base url 'https://test-zkb-web.ininin.com/'.</msg>
+<status status="PASS" starttime="20231224 14:48:31.691" endtime="20231224 14:48:36.168"/>
+</kw>
+<kw name="Maximize Browser Window" library="SeleniumLibrary">
+<doc>Maximizes current browser window.</doc>
+<status status="PASS" starttime="20231224 14:48:36.169" endtime="20231224 14:48:36.768"/>
+</kw>
+<kw name="Input Username" library="keywords">
+<arg>${your_username}</arg>
+<kw name="Input Text" library="SeleniumLibrary">
+<arg>xpath=//*[@id="app"]/div/div[1]/div[2]/form/div[1]/div/div/input</arg>
+<arg>${username}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<msg timestamp="20231224 14:48:36.769" level="INFO">Typing text '18828880000' into text field 'xpath=//*[@id="app"]/div/div[1]/div[2]/form/div[1]/div/div/input'.</msg>
+<status status="PASS" starttime="20231224 14:48:36.768" endtime="20231224 14:48:37.005"/>
+</kw>
+<status status="PASS" starttime="20231224 14:48:36.768" endtime="20231224 14:48:37.005"/>
+</kw>
+<kw name="Input Password" library="keywords">
+<arg>${your_password}</arg>
+<kw name="Input Text" library="SeleniumLibrary">
+<arg>xpath=//*[@id="app"]/div/div[1]/div[2]/form/div[2]/div/div/input</arg>
+<arg>${password}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<msg timestamp="20231224 14:48:37.007" level="INFO">Typing text '123456' into text field 'xpath=//*[@id="app"]/div/div[1]/div[2]/form/div[2]/div/div/input'.</msg>
+<status status="PASS" starttime="20231224 14:48:37.006" endtime="20231224 14:48:37.092"/>
+</kw>
+<status status="PASS" starttime="20231224 14:48:37.006" endtime="20231224 14:48:37.092"/>
+</kw>
+<kw name="Click Login Button" library="keywords">
+<kw name="Click Button" library="SeleniumLibrary">
+<arg>xpath=//*[@id="app"]/div/div[1]/div[2]/div[3]/button</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<msg timestamp="20231224 14:48:37.093" level="INFO">Clicking button 'xpath=//*[@id="app"]/div/div[1]/div[2]/div[3]/button'.</msg>
+<status status="PASS" starttime="20231224 14:48:37.092" endtime="20231224 14:48:37.155"/>
+</kw>
+<status status="PASS" starttime="20231224 14:48:37.092" endtime="20231224 14:48:37.155"/>
+</kw>
+<kw name="Wait Until Page Contains" library="SeleniumLibrary">
+<var>${login_successful}</var>
+<arg>${your_nikename}</arg>
+<arg>timeout=10s</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<msg timestamp="20231224 14:48:38.269" level="INFO">${login_successful} = None</msg>
+<status status="PASS" starttime="20231224 14:48:37.155" endtime="20231224 14:48:38.270"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Login successful: ${login_successful}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20231224 14:48:38.270" level="INFO">Login successful: None</msg>
+<status status="PASS" starttime="20231224 14:48:38.270" endtime="20231224 14:48:38.270"/>
+</kw>
+<kw name="Capture Page Screenshot" library="SeleniumLibrary">
+<arg>login_test.png</arg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<msg timestamp="20231224 14:48:38.746" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="login_test.png"&gt;&lt;img src="login_test.png" width="800px"&gt;&lt;/a&gt;</msg>
+<status status="PASS" starttime="20231224 14:48:38.270" endtime="20231224 14:48:38.746"/>
+</kw>
+<kw name="Click UserInfo Icon" library="keywords">
+<kw name="Click Element" library="SeleniumLibrary">
+<arg>xpath=//*[@id="app"]/div[1]/header/div/div/div[1]</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<msg timestamp="20231224 14:48:38.747" level="INFO">Clicking element 'xpath=//*[@id="app"]/div[1]/header/div/div/div[1]'.</msg>
+<status status="PASS" starttime="20231224 14:48:38.746" endtime="20231224 14:48:38.966"/>
+</kw>
+<status status="PASS" starttime="20231224 14:48:38.746" endtime="20231224 14:48:38.966"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>1s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20231224 14:48:39.967" level="INFO">Slept 1 second</msg>
+<status status="PASS" starttime="20231224 14:48:38.966" endtime="20231224 14:48:39.967"/>
+</kw>
+<kw name="Click Logout Button" library="keywords">
+<kw name="Click Element" library="SeleniumLibrary">
+<arg>xpath=//div[contains(text(), '退出登录')]</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<msg timestamp="20231224 14:48:39.969" level="INFO">Clicking element 'xpath=//div[contains(text(), '退出登录')]'.</msg>
+<status status="PASS" starttime="20231224 14:48:39.968" endtime="20231224 14:48:40.212"/>
+</kw>
+<status status="PASS" starttime="20231224 14:48:39.967" endtime="20231224 14:48:40.212"/>
+</kw>
+<status status="PASS" starttime="20231224 14:48:31.691" endtime="20231224 14:48:40.212"/>
+</test>
+<status status="PASS" starttime="20231224 14:48:31.466" endtime="20231224 14:48:40.213"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat pass="1" fail="0" skip="0" id="s1" name="Test Login">Test Login</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
