@@ -1,0 +1,34 @@
+[
+  {
+    "task_pid": 0,
+    "task_name": "产品档案同步",
+    "cron_expression": "0/15 * * * ?",
+    "sub_process": "robot -P . --log log.txt --console verbose tests/wantit/test_product_profile.robot",
+    "run_status": "停止",
+    "operator": ""
+  },
+  {
+    "task_pid": 0,
+    "task_name": "纸箱订单同步",
+    "cron_expression": "0/17 * * * ?",
+    "sub_process": "robot -P . --log log.txt --console verbose tests/wantit/test_carton_order.robot",
+    "run_status": "停止",
+    "operator": ""
+  },
+  {
+    "task_pid": 0,
+    "task_name": "纸板订单同步",
+    "cron_expression": "0/20 * * * ?",
+    "sub_process": "robot -P . --log log.txt --console verbose tests/wantit/test_paperboard_order.robot",
+    "run_status": "停止",
+    "operator": ""
+  },
+  {
+    "task_pid": 0,
+    "task_name": "生产报工同步",
+    "cron_expression": "*/1 * * * *",
+    "sub_process": "robot -P . --log log.txt --console verbose tests/wantit/test_production_reports.robot",
+    "run_status": "启动",
+    "operator": ""
+  }
+]

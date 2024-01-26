@@ -1,6 +1,6 @@
-from scripts.excel.co.excel_reader import ExcelReader as CartonOrderExcelReader
-from scripts.excel.po.excel_reader import ExcelReader as PaperboardOrderExcelReader
-from scripts.excel.pp.excel_reader import ExcelReader as ProductProfileExcelReader
+from scripts.features.co.excel_reader import ExcelReader as CartonOrderExcelReader
+from scripts.features.po.excel_reader import ExcelReader as PaperboardOrderExcelReader
+from scripts.features.pp.excel_reader import ExcelReader as ProductProfileExcelReader
 
 
 # Example usage

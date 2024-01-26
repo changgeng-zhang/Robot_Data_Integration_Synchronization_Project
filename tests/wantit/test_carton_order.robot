@@ -6,17 +6,23 @@ Resource    ../../config/wantit/carton_order_variables.robot
 Resource    ../../resources/wantit/carton_order_keywords.robot
 Resource    test_login.robot
 
+Library    ../../scripts/features/co/synchronize_carton_order.py
+
 *** Test Cases ***
 Main Test
     # 登录
     Run Keyword  Login Test
     Run Keyword    Set Download Default Directory    ${DOWNLOAD_DEFAULT_DIRECTORY}
 
-    # 产品档案
+    ${export_file}    Set Variable    ${DOWNLOAD_DEFAULT_DIRECTORY}${CARTON_ORDER_FILE_NAME}
+    # 导出前先删除本地文件
+    Remove File    ${export_file}
+    
+    # 从ERP导出纸箱订单
     ${status}    ${message}=    Run Keyword And Ignore Error  CartonOrder QueryDownload Test
     # 执行异常发送消息
-    # Run Keyword If    '${status}'=='FAIL'    Log    ${message}
-
+    Run Keyword If    '${status}'=='FAIL'    Log    ${message}
+    ...    ELSE    Execute Sync    ${export_file}
 
 *** Keywords ***
 CartonOrder QueryDownload Test
@@ -98,6 +104,11 @@ Execute Download Task
     # Wait for the download to complete
     #Wait Until File Exists    ${DOWNLOAD_FOLDER}/${PRODUCT_LIST_FILE_NAME}
     Log    OK
+
+
+Execute Sync
+    [Arguments]    ${export_file_path}
+    synchronize_carton_order    ${export_file_path}
 
 
 Handle Failure

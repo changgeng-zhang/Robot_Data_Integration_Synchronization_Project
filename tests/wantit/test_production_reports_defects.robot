@@ -6,47 +6,49 @@ Report Defects Collection Split
     Run Keyword If    ${condition}
     ...    Report Defects Collection From List    ${DEFECT_DESCRIPTION_FULL_TEXT}
     ...    ELSE
-    ...    Report Defects Split   ${DEFECT_DESCRIPTION_FULL_TEXT}
+    ...    Report Defects Split   ${DEFECT_DESCRIPTION_FULL_TEXT}    1
 
 Report Defects Collection From List
     [Arguments]     ${DEFECT_DESCRIPTIONS}
 
     @{defect_description_array}=   Split String   ${DEFECT_DESCRIPTIONS}  ,
-
+    
+    ${input_loop_index}    Set Variable    1
     FOR   ${description}  IN   @{defect_description_array}
-         Report Defects Split  ${description}
+         Report Defects Split  ${description}    ${input_loop_index}
+         ${input_loop_index}=    Evaluate    ${input_loop_index} + 1
     END
 
 Report Defects Split
-    [Arguments]    ${DEFECT_DESCRIPTION_TEXT}
+    [Arguments]    ${DEFECT_DESCRIPTION_TEXT}    ${INPUT_LOOP_INDEX_TEXT}
     ${condition}=    Evaluate    '_' in """${DEFECT_DESCRIPTION_TEXT}"""
 
     Run Keyword If    ${condition}
-    ...    Report Defects From List    ${DEFECT_DESCRIPTION_TEXT}
+    ...    Report Defects From List    ${DEFECT_DESCRIPTION_TEXT}    ${INPUT_LOOP_INDEX_TEXT}
     ...    ELSE    
-    ...    Log    ${DEFECT_DESCRIPTION_TEXT}：不符合不良信息标准格式
+    ...    Fail    ${DEFECT_DESCRIPTION_TEXT}：不符合不良信息标准格式
 
 Report Defects From List
-    [Arguments]     ${DEFECT_DESCRIPTION}
+    [Arguments]     ${DEFECT_DESCRIPTION}    ${INPUT_LOOP_INDEX_TEXT}
 
     @{defect_description_array}=   Split String   ${DEFECT_DESCRIPTION}  _
 
     ${array_length}=    Get Length    ${defect_description_array}
 
     Run Keyword If    ${array_length} == 2    
-    ...    Report Defects    ${defect_description_array[0]}    ${defect_description_array[1]}
+    ...    Report Defects    ${defect_description_array[0]}    ${defect_description_array[1]}    ${INPUT_LOOP_INDEX_TEXT}
     ...    ELSE    
-    ...    Log    ${DEFECT_DESCRIPTION}：不符合不良信息标准格式
+    ...    Fail    ${DEFECT_DESCRIPTION}：不符合不良信息标准格式
 
 Report Defects
-    [Arguments]    ${DEFECT_DESCRIPTION_TEXT}    ${DEFECTIVE_QUANTITY_TEXT}
+    [Arguments]    ${DEFECT_DESCRIPTION_TEXT}    ${DEFECTIVE_QUANTITY_TEXT}    ${INPUT_LOOP_INDEX_TEXT}
     # 点击添加不良按钮
     Click Add Defect
     ${defect_wait_results}=    Run Keyword And Ignore Error    Wait Until Keyword Succeeds    10x    1s    Check Table Data And Execute Defective Product Input
     Run Keyword If    '${defect_wait_results[0]}' == 'FAIL'    
-    ...    Log    添加不良失败
+    ...    Fail    点击添加次品，ERP未出现可输入项
     ...    ELSE    
-    ...    Input Defective Product Information    ${DEFECT_DESCRIPTION_TEXT}    ${DEFECTIVE_QUANTITY_TEXT}
+    ...    Input Defective Product Information    ${DEFECT_DESCRIPTION_TEXT}    ${DEFECTIVE_QUANTITY_TEXT}    ${INPUT_LOOP_INDEX_TEXT}
 
 Check Table Data And Execute Defective Product Input
     # 验证点了添加不良按钮后，可输入项是否出现
@@ -64,27 +66,26 @@ Check Table Data And Execute Defective Product Input
 
 
 Input Defective Product Information
-    [Arguments]    ${DEFECT_DESCRIPTION_TEXT}    ${DEFECTIVE_QUANTITY_TEXT}
-    Clear Operation Filter
-    Input Operation Filter
+    [Arguments]    ${DEFECT_DESCRIPTION_TEXT}    ${DEFECTIVE_QUANTITY_TEXT}    ${INPUT_LOOP_INDEX_TEXT}
+    # Clear Operation Filter
+    # Input Operation Filter
     # 临时用sleep，应该等待 -1
-    Sleep    2
-    ${status}    ${message}=    Run Keyword And Ignore Error    Execute Input Defective Product    ${DEFECT_DESCRIPTION_TEXT}    ${DEFECTIVE_QUANTITY_TEXT}
+    # Sleep    2
+    ${status}    ${message}=    Run Keyword And Ignore Error    Execute Input Defective Product    ${DEFECT_DESCRIPTION_TEXT}    ${DEFECTIVE_QUANTITY_TEXT}    ${INPUT_LOOP_INDEX_TEXT}
     Run Keyword If    '${status}'=='FAIL'    
-    ...    Log    ${message}
+    ...    Fail    ${message}
 
 
 Execute Input Defective Product
-    [Arguments]    ${DEFECT_DESCRIPTION_TEXT}    ${DEFECTIVE_QUANTITY_TEXT}
-    # 点击本道次品
+    [Arguments]    ${DEFECT_DESCRIPTION_TEXT}    ${DEFECTIVE_QUANTITY_TEXT}    ${INPUT_LOOP_INDEX_TEXT}
     # 等待-1出现
-    # 输入-1，过滤出唯一输入
+    # 定位-1行
     # 输入致次原因（不良原因）
     # 输入次品数
     # 点击保存
+    # 确保数据保存成功，校验录入人是否刷新
 
-    # 动态生成xpath，使用订单号动态定位
-    # ${xpath}=    Set Variable    //*[contains(text(), '${DEFECTIVE_PRODUCT_ELEMENT_TEXT}')]
+    # 等待-1出现
     Wait Until Element Is Visible    ${DEFECTIVE_PRODUCT_ELEMENT_XPATH}    10s
     # 定位元素
     ${defective_product_element}=    Get WebElement    ${DEFECTIVE_PRODUCT_ELEMENT_XPATH}
@@ -105,7 +106,26 @@ Execute Input Defective Product
         Exit For Loop If    ${defective_product_index} == 5
     END
 
-    Click Save Defective
+    # Click Save Defective
+    Click Save Defective F4
     # 临时用sleep，应该等待保存按钮变灰为不可用，确保保存成功
-    Sleep    2
+    ${defect_wait_save_successful}=    Run Keyword And Ignore Error    Wait Until Keyword Succeeds    10x    1s    Check Execute Input Defective Product Save Successful    ${INPUT_LOOP_INDEX_TEXT}    ${DEFECT_DESCRIPTION_TEXT}
+    Run Keyword If    '${defect_wait_save_successful[0]}' == 'FAIL'
+    ...    Fail    保存不良失败
     Log    Input Defective Product Done.
+
+
+Check Execute Input Defective Product Save Successful
+    [Arguments]    ${INPUT_LOOP_INDEX_TEXT}    ${DEFECT_DESCRIPTION_TEXT}
+    ${CURRENT_INPUT_DEFECTIVE_PRODUCT_ELEMENT_XPATH}=    Set Variable    ${Defective_Product_Grid_Panel_Body}//*[contains(text(), '${DEFECT_DESCRIPTION_TEXT}')]
+    Wait Until Element Is Visible    ${CURRENT_INPUT_DEFECTIVE_PRODUCT_ELEMENT_XPATH}    10s
+
+    ${CURRENT_INPUT_DEFECTIVE_PRODUCT_PARENT_XPATH}=    Set Variable    ${CURRENT_INPUT_DEFECTIVE_PRODUCT_ELEMENT_XPATH}/../..
+    ${CURRENT_INPUT_DEFECTIVE_PRODUCT_DIV_XPATH}=    Set Variable    ${CURRENT_INPUT_DEFECTIVE_PRODUCT_PARENT_XPATH}//td/div
+    @{defective_product_div_elements}=    Get Webelements    ${CURRENT_INPUT_DEFECTIVE_PRODUCT_DIV_XPATH}
+
+    ${data_entry_operator}=    Get Text    ${defective_product_div_elements}[8]
+
+    Log    Check Execute Input Defective Product Save Successful Text: ${data_entry_operator}    # Log the text of the current element
+    # 从-1变为输入的记录条数，认为是保存成功
+    Should Be Equal As Strings    ${data_entry_operator}    ${USER_NAME_ALIAS}

@@ -40,6 +40,7 @@ ${Save_Report_Success}    XPath=//img[contains(@class, 'x-action-col-icon') and 
 
 # 不良品
 ${Defective_Product_Grid_Panel}    //div[@id='WorkProdBGridPanel']
+${Save_Defect}    xpath=${Defective_Product_Grid_Panel}//span[contains(@class,'x-btn-inner') and contains(text(),'保存(F4)')]
 ${Defect_Process}    xpath=${Defective_Product_Grid_Panel}//span[contains(@class,'x-btn-inner') and contains(text(),'本道次品')]
 ${Defect_Previous_Process}    xpath=${Defective_Product_Grid_Panel}//span[contains(@class,'x-btn-inner') and contains(text(),'前道次品')]
 

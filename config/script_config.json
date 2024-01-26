@@ -33,6 +33,6 @@
     "-->"
   ],
   "working_directory": "/Users/changgeng.zhang/data/",
-  "machine_tool_equipment_mapping_file": "/Users/changgeng.zhang/data/工艺流程转换表新.xlsx",
-  "machine_tool_process_type_mapping_file": "/Users/changgeng.zhang/data/机床工序类型对应表.xlsx"
+  "machine_tool_equipment_mapping_file": "/Users/changgeng.zhang/data/恒大工艺流程转换表新.xlsx",
+  "machine_tool_process_type_mapping_file": "/Users/changgeng.zhang/data/恒大机床工序类型对应表.xlsx"
 }

@@ -11,6 +11,10 @@ Click Menu
 
 Clear Process Category
     Clear Element Text    ${Process_Category}
+    
+Input Process Category
+    [Arguments]    ${Process_Category_Text}
+    Input Text    ${Process_Category}    ${Process_Category_Text}
 
 Input Machine Tool
     [Arguments]    ${Machine_Tool_Text}
@@ -93,6 +97,9 @@ Input Defective_Quantity
 
 Click Save Defective
     Click Element    ${Save_Defective_Product}
+
+Click Save Defective F4
+    Click Element    ${Save_Defect}
 
 # 报工人信息
 Click Add Reporter

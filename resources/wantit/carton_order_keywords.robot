@@ -56,3 +56,4 @@ Click Search Button
 Click Export All Data
     Wait Until Page Contains Element    ${EXPORT_ALL_DATA}    timeout=10s
     Click Element    ${EXPORT_ALL_DATA}
+    

@@ -9,8 +9,8 @@ Resource    test_production_reports_defects.robot
 Resource    test_production_reports_reporter.robot
 
 Library    Collections
-Library    ../../scripts/excel/pr/retrieve_production_reports.py
-Library    ../../scripts/excel/pr/synchronize_operation_results.py
+Library    ../../scripts/features/pr/retrieve_production_reports.py
+Library    ../../scripts/features/pr/synchronize_operation_results.py
 
 *** Test Cases ***
 Main Test
@@ -20,21 +20,20 @@ Main Test
     Input Quick Menu    ${QUICK_MENU}
 
     # 调用智控宝获取报工记录
-    ${task_reporting_records}=    retrieve_production_reports
+    ${conversion_file_name}    ${valid_records}=    retrieve_production_reports_tuple_list_local_file
+    Run Keyword If    "${valid_records}" == "None"    Fatal Error    没有待同步报工数据，流程结束
+    ${task_reporting_records}=    production_reports_conversion_tuple_list    ${conversion_file_name}
     ${record_length}=    Get Length    ${task_reporting_records}
 
     # 检查是否有需要填报的数据
-    Run Keyword If    ${record_length} <= 1    Fatal Error    无报工数据，流程结束。
+    Run Keyword If    ${record_length} <= 0    Fatal Error    没有待同步报工数据，流程结束
+
+    # 创建一个空列表，用于记录执行回写结果
+    ${sync_result_records}=    Create List
 
     # 循环输入ERP
-    ${sync_records}    Create List    # 创建一个空列表
     FOR    ${element}    IN RANGE    1    ${record_length}
-        Click Menu
-        # 使用 Select Frame 切换到 iframe
-        Wait Until Element Is Visible    ${IFRAME_LOCATOR}    timeout=10s
-        Select Frame    ${IFRAME_LOCATOR}
-
-        # 获取参数
+        # 解析、准备数据
         ${record}    Set Variable    ${task_reporting_records[${element}]}
         Log    Array element at index ${element}: ${record}
         ${box_order_code}    Set Variable    ${record[0]}
@@ -49,27 +48,54 @@ Main Test
         ${start_production_time}    Set Variable    ${record[15]}
         ${reporting_time}    Set Variable    ${record[8]}
         ${reporting_id}    Set Variable    ${record[11]}
-        # 信息输入
-        ${status}    ${message}=    Run Keyword And Ignore Error  Production Reports Test    ${box_order_code}    ${erp_process_type}    ${reporting_machine_tool}    ${reporting_team}    ${erp_scheduling_order_number}    ${completed_quantity}    ${defective_quantity}    ${defect_description}    ${operator_information}    ${start_production_time}    ${reporting_time}
+        ${process_type_consistent}    Set Variable    ${record[18]}
+        ${reporting_process_type}    Set Variable    ${record[19]}
 
-        # 执行异常发送消息及业务处理
-        ${sync_info}=    Set Variable If    '${status}'=='FAIL'    [${reporting_id}, 回写失败, ${message}]    [${reporting_id}, 回写成功, 回写成功]
-        Append To List    ${sync_records}    ${sync_info}
-        Log    ${sync_records}
+        # 每次回写都先点击菜单，用于重置右侧的iframe元素
+        Click Menu
+
+        # 使用 Select Frame 切换到 iframe
+        Wait Until Element Is Visible    ${IFRAME_LOCATOR}    timeout=10s
+        Select Frame    ${IFRAME_LOCATOR}
+
+        # 开始报工回写ERP
+        ${params}=    Create Dictionary    box_order_code=${box_order_code}    reporting_machine_tool=${reporting_machine_tool}    reporting_team=${reporting_team}    erp_scheduling_order_number=${erp_scheduling_order_number}    completed_quantity=${completed_quantity}    defect_description=${defect_description}    operator_information=${operator_information}    start_production_time=${start_production_time}    reporting_time=${reporting_time}    process_type_consistent=${process_type_consistent}    reporting_process_type=${reporting_process_type}
+        ${status}    ${message}=    Run Keyword And Ignore Error  Production Reports Test    ${params}
+
+        # 处理回写准备及消息
+        ${sync_info}=    Create List
+        Run Keyword If    '${status}'=='FAIL'    Append To List    ${sync_info}    ${reporting_id}    回写失败    ${message}
+        ...    ELSE    Append To List    ${sync_info}    ${reporting_id}    回写成功    回写成功
+
+        Append To List    ${sync_result_records}    ${sync_info}
+        Log    ${sync_result_records}
         Unselect Frame
     END
-    
-    synchronize_operation_results_tuple    ${sync_records}
+
+    # 同步服务端回写结果
+    synchronize_operation_results_tuple    ${sync_result_records}    ${task_reporting_records}    ${conversion_file_name}
     # 关闭浏览器
     Close Browser
 
 *** Keywords ***
 Production Reports Test
     [Documentation]    This test case demonstrates production reports
-    [Arguments]    ${box_order_code}    ${erp_process_type}    ${reporting_machine_tool}    ${reporting_team}    ${erp_scheduling_order_number}    ${completed_quantity}    ${defective_quantity}    ${defect_description}    ${operator_information}    ${start_production_time}    ${reporting_time}
+    [Arguments]    ${params}
+    ${box_order_code}=    Get From Dictionary    ${params}    box_order_code
+    ${reporting_machine_tool}=    Get From Dictionary    ${params}    reporting_machine_tool
+    ${reporting_team}=    Get From Dictionary    ${params}    reporting_team
+    ${erp_scheduling_order_number}=    Get From Dictionary    ${params}    erp_scheduling_order_number
+    ${completed_quantity}=    Get From Dictionary    ${params}    completed_quantity
+    ${defect_description}=    Get From Dictionary    ${params}    defect_description
+    ${operator_information}=    Get From Dictionary    ${params}    operator_information
+    ${start_production_time}=    Get From Dictionary    ${params}    start_production_time
+    ${reporting_time}=    Get From Dictionary    ${params}    reporting_time
+    ${process_type_consistent}=    Get From Dictionary    ${params}    process_type_consistent
+    ${reporting_process_type}=    Get From Dictionary    ${params}    reporting_process_type
 
     # 清空工序类型
     Clear Process Category
+    Input Process Category    ${reporting_process_type}
 
     # 机床
     Input Machine Tool    ${reporting_machine_tool}
@@ -77,8 +103,8 @@ Production Reports Test
     # 班组
     Input Work Team    ${reporting_team}
 
-    # 排序单号
-    Input Scheduling Order Number    ${erp_scheduling_order_number}
+    # 排序单号（报工工序类型与排程一致时才输入）
+    Run Keyword If    '${process_type_consistent}' == 'True'    Input Scheduling Order Number    ${erp_scheduling_order_number}
 
     # 条码（套件工号）
     Input Barcode    ${box_order_code}
@@ -98,12 +124,14 @@ Production Reports Test
 
 Delete Report
     Log    删除报工记录,关闭浏览器
-    Click Delete
-    Fatal Error    报工流程中断，删除报工记录
+    ${status}    ${message}=    Run Keyword And Ignore Error    Click Delete
+    Run Keyword If    '${status}'=='FAIL'
+    ...    Log    ${message}
+    Fail    报工流程中断，删除报工记录。执行情况：${status} ${message}
 
 Handle Failure
-    Log    查询数据无
-    Fatal Error    查询数据无
+    Log    车间数据查询无
+    Fail    车间数据查询无
 
 
 Check Table Data And Execute Good Product Input

@@ -22,14 +22,14 @@ Search Select Reporter
     [Arguments]    ${reporter}
     Input Reporter Name    ${reporter}
     Click Search Reporter
-    ${wait_results}=    Run Keyword And Ignore Error    Wait Until Keyword Succeeds    5x    1s    Check Table Data And Execute Select Reporter    ${reporter}
+    ${wait_results}=    Run Keyword And Ignore Error    Wait Until Keyword Succeeds    3x    1s    Check Table Data And Execute Select Reporter    ${reporter}
     Run Keyword If    '${wait_results[0]}' == 'FAIL'    Log    报工人查询未加载：${reporter}
     ...    ELSE    Execute Select Reporter    ${reporter}
 
 Check Table Data And Execute Select Reporter
     [Arguments]    ${reporter}
     ${SEARCH_REPORTER_XPATH}=    Set Variable    ${Reporter_Window}//div[contains(text(), '${reporter}')]
-    Wait Until Element Is Visible    ${SEARCH_REPORTER_XPATH}    10s
+    Wait Until Element Is Visible    ${SEARCH_REPORTER_XPATH}    3s
     ${reporter_element}=    Get WebElement    ${SEARCH_REPORTER_XPATH}
     ${text}=  Get Text  ${reporter_element}
     Should Match Regexp    ${text}    ${reporter}

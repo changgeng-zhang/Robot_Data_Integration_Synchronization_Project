@@ -6,16 +6,23 @@ Resource    ../../config/wantit/product_profile_variables.robot
 Resource    ../../resources/wantit/product_profile_keywords.robot
 Resource    test_login.robot
 
+Library    ../../scripts/features/pp/synchronize_product_profile.py
+
 *** Test Cases ***
 Main Test
     # 登录
     Run Keyword  Login Test
     Run Keyword    Set Download Default Directory    ${DOWNLOAD_DEFAULT_DIRECTORY}
-
-    # 产品档案
+    
+    ${export_file}    Set Variable    ${DOWNLOAD_DEFAULT_DIRECTORY}${PRODUCT_PROFILE_FILE_NAME}
+    # 导出前先删除本地文件
+    Remove File    ${export_file}
+    
+    # 从ERP导出产品档案
     ${status}    ${message}=    Run Keyword And Ignore Error  ProductProfile QueryDownload Test
     # 执行异常发送消息
-    # Run Keyword If    '${status}'=='FAIL'    Log    ${message}
+    Run Keyword If    '${status}'=='FAIL'    Log    ${message}
+    ...    ELSE    Execute Sync    ${export_file}
 
 *** Keywords ***
 ProductProfile QueryDownload Test
@@ -95,5 +102,10 @@ Execute Download Task
     Log    OK
     
 
+Execute Sync
+    [Arguments]    ${export_file_path}
+    synchronize_product_profile    ${export_file_path}
+    
+    
 Handle Failure
     Log    查询产品档案数据无
