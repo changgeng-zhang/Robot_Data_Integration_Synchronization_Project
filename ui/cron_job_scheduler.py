@@ -45,7 +45,7 @@ class CronJobScheduler:
         subprocess.run(self.command.replace('log.txt', log_filename).split())
 
     def start_scheduler(self):
-        self.scheduler.add_job(self.execute_command, CronTrigger.from_crontab(self.cron_expression))
+        self.scheduler.add_job(self.execute_command, CronTrigger.from_crontab(self.cron_expression), max_instances=1)
         thread = threading.Thread(target=self.scheduler.start)
         thread.start()
         return thread.native_id

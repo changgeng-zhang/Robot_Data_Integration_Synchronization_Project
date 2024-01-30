@@ -4,16 +4,25 @@ import os
 
 
 class ConfigManager:
-    def __init__(self, file_path):
-        config_file_path = file_path
-        if file_path is None:
-            # 获取当前脚本所在的目录
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            # 回到上一级目录，然后进入 config 子目录
-            config_file_path = os.path.join(os.path.dirname(script_dir), 'config', 'script_config.json')
+    _instance = None
 
-        self.file_path = config_file_path
-        self.config_data = self._load_config()
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(ConfigManager, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self, file_path):
+        if not hasattr(self, 'initialized'):
+            self.initialized = True
+            config_file_path = file_path
+            if file_path is None:
+                # 获取当前脚本所在的目录
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                # 回到上一级目录，然后进入 config 子目录
+                config_file_path = os.path.join(os.path.dirname(script_dir), 'config', 'script_config.json')
+
+            self.file_path = config_file_path
+            self.config_data = self._load_config()
 
     def _load_config(self):
         try:
@@ -49,6 +58,9 @@ class ConfigManager:
 
     def get_retrieve_production_reports_limit(self):
         return self.config_data.get('retrieve_production_reports_limit', 10)
+
+    def get_ignore_paperboard_process_flag(self):
+        return bool(self.config_data.get('ignore_paperboard_process_flag', 0))
 
     def get_process_delimiter(self):
         return self.config_data.get('process_delimiter', [])

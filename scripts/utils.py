@@ -168,7 +168,11 @@ def requests_post(url, data):
     timestamp = get_timestamp()
     sign = get_sign(config_manager.get_secret_key(), data, timestamp, False)
     try:
-        post_data = {"appId": config_manager.get_app_id(), "timestamp": timestamp, "sign": sign, "data": data, "ignorePaperboardProcessFlag": True}
+        post_data = {"appId": config_manager.get_app_id(),
+                     "timestamp": timestamp,
+                     "sign": sign,
+                     "data": data,
+                     "ignorePaperboardProcessFlag": config_manager.get_ignore_paperboard_process_flag()}
         return requests.post(url=url, headers=get_headers(), json=post_data, verify=False)
     except Exception as err:
         raise err

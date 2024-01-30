@@ -1,0 +1,88 @@
+[
+  {
+    "org_id": 7699,
+    "table": [
+      {
+        "name": "",
+        "headers": [
+          {
+            "header_text": "客户代号",
+            "object_name": ""
+          },
+          {
+            "header_text": "客户名称",
+            "object_name": ""
+          },
+          {
+            "header_text": "产品级编号",
+            "object_name": ""
+          },
+          {
+            "header_text": "规格型号",
+            "object_name": ""
+          },
+          {
+            "header_text": "产品类型",
+            "object_name": ""
+          },
+          {
+            "header_text": "箱型",
+            "object_name": ""
+          },
+          {
+            "header_text": "楞型",
+            "object_name": ""
+          },
+          {
+            "header_text": "印刷颜色1",
+            "object_name": ""
+          },
+          {
+            "header_text": "2",
+            "object_name": ""
+          },
+          {
+            "header_text": "3",
+            "object_name": ""
+          },
+          {
+            "header_text": "4",
+            "object_name": ""
+          },
+          {
+            "header_text": "5",
+            "object_name": ""
+          },
+          {
+            "header_text": "6",
+            "object_name": ""
+          },
+          {
+            "header_text": "印刷方式",
+            "object_name": ""
+          },
+          {
+            "header_text": "单位面积",
+            "object_name": ""
+          },
+          {
+            "header_text": "加工说明",
+            "object_name": ""
+          },
+          {
+            "header_text": "工艺流程",
+            "object_name": ""
+          },
+          {
+            "header_text": "规格",
+            "object_name": ""
+          },
+          {
+            "header_text": "材质",
+            "object_name": ""
+          }
+        ]
+      }
+    ]
+  }
+]

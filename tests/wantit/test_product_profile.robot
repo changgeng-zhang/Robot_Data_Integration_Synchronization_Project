@@ -99,7 +99,7 @@ Execute Download Task
     Wait Until Keyword Succeeds    15x    1s    File Should Exist    ${DOWNLOAD_DEFAULT_DIRECTORY}${PRODUCT_PROFILE_FILE_NAME}
     # Wait for the download to complete
     #Wait Until File Exists    ${DOWNLOAD_FOLDER}/${PRODUCT_LIST_FILE_NAME}
-    Log    OK
+    Log    导出产品档案成功
     
 
 Execute Sync
@@ -108,4 +108,4 @@ Execute Sync
     
     
 Handle Failure
-    Log    查询产品档案数据无
+    Fail    查询产品档案数据无

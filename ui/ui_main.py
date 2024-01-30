@@ -41,7 +41,7 @@ class SchedulerJobWindow(QMainWindow):
         main_layout.addLayout(right_layout)
 
         self.setWindowTitle('任务调度中心')
-        self.setGeometry(100, 100, 1920, 1080)
+        self.setGeometry(100, 100, 1024, 768)
 
     def handle_row_clicked(self, row, row_data):
         print(f"Main Clicked on row {row + 1}: {row_data}")

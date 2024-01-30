@@ -5,13 +5,14 @@ import json
 import sys
 import time
 
-from openpyxl import Workbook
+import pandas as pd
 
 from scripts import utils
 from scripts.config import ConfigManager
 from scripts.enums import MessageType, BusinessType, MessageLevel
-from scripts.features.pp.excel_reader import ExcelReader as ProductProfileExcelReader
+from scripts.features.pp.pp_excel_parser import create_parser
 from scripts.message import MessageSender
+from scripts.work_flow_utils import create_work_flow_parser
 
 config_manager = ConfigManager(None)
 
@@ -51,7 +52,8 @@ def generate_conversion_file(product_profiles, conversion_dir, operation_file_na
         if original_work_flow is None or not original_work_flow:
             print("产品档案工艺流程为空, 产品编号: {}".format(product_profile.product_number))
             continue
-        work_flow_no = utils.format_process(original_work_flow)
+        # work_flow_no = utils.format_process(original_work_flow)
+        work_flow_no = create_work_flow_parser(original_work_flow).format_process()
         if not work_flow_no:
             print("不能正确转换产品档案工艺流程, 产品编号: {}, 原工艺流程: {}".format(product_profile.product_number, product_profile.technological_process))
             continue
@@ -61,17 +63,21 @@ def generate_conversion_file(product_profiles, conversion_dir, operation_file_na
                                                      product_profile.printing_color3,
                                                      product_profile.printing_color4,
                                                      product_profile.printing_color5,
-                                                     product_profile.printing_color6] if pc is not None and pc != "")
+                                                     product_profile.printing_color6] if pc is not None and pc)
         # 印板号、模板号
         template_no = ""
         forme_no = ""
-        if product_profile.printing_method is not None and product_profile.printing_method != "":
+        if product_profile.printing_method is not None and product_profile.printing_method:
             printing_method = product_profile.printing_method.split("/")
             if len(printing_method) == 1:
                 forme_no = printing_method[0]
             elif len(printing_method) == 2:
                 forme_no = printing_method[0]
                 template_no = printing_method[1]
+        if product_profile.plate_number is not None and product_profile.plate_number:
+            forme_no = product_profile.plate_number
+        if product_profile.template_number is not None and product_profile.template_number:
+            template_no = product_profile.template_number
 
         data_conversion_result.append([
             product_profile.customer_code,
@@ -91,15 +97,11 @@ def generate_conversion_file(product_profiles, conversion_dir, operation_file_na
             work_flow_no
         ])
 
-    # 创建一个新的Excel文件
-    workbook = Workbook()
-    sheet = workbook.active
-    # 一次性写入多行数据
-    for row in data_conversion_result:
-        sheet.append(row)
-    # 保存文件
+    # 创建一个新的Excel文件，保存转换结果
     conversion_file_name = utils.generate_file_path(conversion_dir, operation_file_name)
-    workbook.save(conversion_file_name)
+    df = pd.DataFrame(data_conversion_result[1:], columns=data_conversion_result[0])
+    df.to_excel(conversion_file_name, index=False)
+
     return conversion_file_name
 
 
@@ -111,9 +113,7 @@ def synchronize_product_profile(export_file):
     # 读取原始文件
     operation_file_name = str(int(time.mktime(time.localtime(time.time()))))
     pp_export_file = utils.copy_and_rename_file(export_file, utils.generate_file_path(config_manager.get_pp_export_dir(), operation_file_name))
-    excel_reader = ProductProfileExcelReader(pp_export_file)
-    excel_reader.read_excel()
-    product_profiles = excel_reader.get_product_profiles()
+    product_profiles = create_parser(config_manager.get_org_id(), pp_export_file).read_excel().get_product_profiles()
     if product_profiles is None or not product_profiles:
         MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_PRODUCT_PROFILE.name, MessageLevel.INFO).send_message("导出数据为空，请关注。")
         return
@@ -183,16 +183,10 @@ def synchronize_product_profile(export_file):
                   BusinessType.SYNCHRONIZE_PRODUCT_PROFILE.name,
                   MessageLevel.INFO
                   ).send_message("同步结束, reason个数: {}, {}".format(len(reason_result), list(set(reason_result))))
-    # 创建一个新的Excel文件
-    workbook = Workbook()
-    sheet = workbook.active
-    # 一次性写入多行数据
-    for row in data_sync_result:
-        sheet.append(row)
-
-    # 保存文件
+    # 创建一个新的Excel文件，保存结果
     result_file_name = utils.generate_file_path(config_manager.get_pp_result_dir(), operation_file_name)
-    workbook.save(result_file_name)
+    df = pd.DataFrame(data_sync_result[1:], columns=data_sync_result[0])
+    df.to_excel(result_file_name, index=False)
 
 
 if __name__ == "__main__":

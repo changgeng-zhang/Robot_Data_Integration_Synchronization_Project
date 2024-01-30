@@ -3,8 +3,8 @@
   "profiles_active": "test",
   "enterprise": {
     "app_id": 1660661052,
-    "secret_key": "dT7itcnk4PVN1Xks",
-    "org_id": 1660661052,
+    "secret_key": "dT7itcnk4PVN1Xks_111",
+    "org_id": 1451,
     "org_name": "功能开发测试"
   },
   "dingtalk_message": {
@@ -28,6 +28,7 @@
       "order_detail": "https://digtest.ininin.com/dpsthird/api/v1/production/order_detail"
     }
   },
+  "ignore_paperboard_process_flag": 1,
   "retrieve_production_reports_limit": 5,
   "process_delimiter": [
     "-->"

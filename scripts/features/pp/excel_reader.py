@@ -1,3 +1,4 @@
+"""
 import pandas as pd
 
 
@@ -73,27 +74,6 @@ class ProductProfile:
                  technological_process: str,
                  specifications: str,
                  material: str):
-        """
-        :param customer_code: 客户代号
-        :param customer_name: 客户名称
-        :param product_number: 产品级编号
-        :param specifications_models: 规格型号
-        :param product_type: 产品类型
-        :param box_type: 箱型
-        :param corrugated_type: 楞型
-        :param printing_color1: 印刷颜色1
-        :param printing_color2: 2
-        :param printing_color3: 3
-        :param printing_color3: 4
-        :param printing_color5: 5
-        :param printing_color6: 6
-        :param printing_method: 印刷方式
-        :param unit_area: 单位面积
-        :param processing_instructions: 加工说明
-        :param technological_process: 工艺流程
-        :param specifications: 规格
-        :param material: 材质
-        """
         self.customer_code = customer_code
         self.customer_name = customer_name
         self.product_number = product_number
@@ -134,3 +114,4 @@ class ProductProfile:
                 f"technological_process: {self.technological_process}, "
                 f"specifications: {self.specifications}, "
                 f"material: {self.material}")
+"""
