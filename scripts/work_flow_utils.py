@@ -8,18 +8,20 @@ config_manager = ConfigManager(None)
 
 class TechnologicalProcessParser(ABC):
 
-    def __init__(self, technological_process=None):
+    def __init__(self, technological_process: str = None):
         self.technological_process = technological_process
 
     @abstractmethod
-    def format_process(self):
+    def format_process(self, work_flow: str):
         pass
 
 
 class CompanyHDProcessParser(TechnologicalProcessParser):
     FORBIDDEN_KEYWORDS = ['入库', '外协']
 
-    def format_process(self):
+    def format_process(self, work_flow: str = None):
+        if work_flow is not None:
+            self.technological_process = work_flow
         if check_org_process_delimiter() is False:
             return self.technological_process
 
@@ -55,8 +57,11 @@ class CompanyRSProcessParser(TechnologicalProcessParser):
     ]
     SPECIAL_KEYWORD = '自/圆模撕边'
     REPLACE_KEYWORDS = [{'印刷_自/圆模撕边': '印刷_圆模撕边'}, {'冲模_自/圆模撕边': '冲模_自动模撕边'}]
+    PROCESS_TYPE_CONVERT_MACHINE_TOOL = ['分纸开槽', '临时工艺']
 
-    def format_process(self):
+    def format_process(self, work_flow: str = None):
+        if work_flow is not None:
+            self.technological_process = work_flow
         if self.technological_process is None or not self.technological_process:
             return self.technological_process
         if check_org_process_delimiter() is False:
@@ -135,12 +140,12 @@ def check_org_process_delimiter():
         return False
 
 
-def create_work_flow_parser(technological_process):
+def create_work_flow_parser(technological_process: str = None):
     org_id = config_manager.get_org_id()
     if org_id in [7699, 1660661052]:
-        return CompanyHDProcessParser(technological_process)
+        return CompanyHDProcessParser(technological_process) if technological_process is not None else CompanyHDProcessParser()
     elif org_id == 1451:
-        return CompanyRSProcessParser(technological_process)
+        return CompanyRSProcessParser(technological_process) if technological_process is not None else CompanyRSProcessParser()
     else:
         raise ValueError("Invalid ORG ID")
 

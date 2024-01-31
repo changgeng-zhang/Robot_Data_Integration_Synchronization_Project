@@ -50,13 +50,19 @@ def get_headers():
 
 
 def read_excel_tuple_list(excel_file, min_row):
-    # 读取 Excel 文件
-    workbook = load_workbook(excel_file)
-    sheet = workbook.active
+    if excel_file is None or not excel_file:
+        return []
+    if os.path.exists(excel_file):
+        # 判断路径是文件还是目录
+        if os.path.isfile(excel_file):
+            # 读取 Excel 文件
+            workbook = load_workbook(excel_file)
+            sheet = workbook.active
 
-    # 将每一行的单元格值转换为元组
-    excel_data = [tuple(cell.value for cell in row) for row in sheet.iter_rows(min_row=min_row, max_row=sheet.max_row)]
-    return excel_data
+            # 将每一行的单元格值转换为元组
+            excel_data = [tuple(cell.value for cell in row) for row in sheet.iter_rows(min_row=min_row, max_row=sheet.max_row)]
+            return excel_data
+    return []
 
 
 def create_subdirectory(base_directory):

@@ -1,3 +1,4 @@
+"""
 import pandas as pd
 
 
@@ -71,27 +72,6 @@ class CartonOrder:
                  process_flow: str,
                  original_machine: str,
                  object_id: str):
-        """
-        纸箱订单
-        :param production_order_number:生产单号
-        :param set_job_number:套件工号
-        :param product_number:产品号
-        :param customer_abbreviation:客户简称
-        :param specification_model:规格型号
-        :param process_description:工序说明
-        :param process_type:工序类型
-        :param scheduled_batch_time:定排号时间
-        :param carton_type:箱型
-        :param scheduling_order_number:排程单号
-        :param remarks:备注
-        :param delivery_date:交货日期
-        :param order_quantity:订单数量
-        :param process_assurance_quantity:确保数(工序)
-        :param machine_tool:机床
-        :param process_flow:工艺流程
-        :param original_machine:原机台
-        :param object_id:ObjID
-        """
         self.production_order_number = production_order_number
         self.set_job_number = set_job_number
         self.product_number = product_number
@@ -113,3 +93,4 @@ class CartonOrder:
 
     def __str__(self):
         return f"production_order_number: {self.production_order_number}, set_job_number: {self.set_job_number}"
+"""

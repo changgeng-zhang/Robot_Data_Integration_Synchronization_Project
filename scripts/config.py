@@ -62,6 +62,12 @@ class ConfigManager:
     def get_ignore_paperboard_process_flag(self):
         return bool(self.config_data.get('ignore_paperboard_process_flag', 0))
 
+    def get_ignore_carton_process_flag(self):
+        return bool(self.config_data.get('ignore_carton_process_flag', 0))
+
+    def get_erp_schedule_obj_id_expand_logic_flag(self):
+        return bool(self.config_data.get('erp_schedule_obj_id_expand_logic_flag', 0))
+
     def get_process_delimiter(self):
         return self.config_data.get('process_delimiter', [])
 

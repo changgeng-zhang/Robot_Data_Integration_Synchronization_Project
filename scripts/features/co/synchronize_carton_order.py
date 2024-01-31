@@ -2,16 +2,19 @@
 import json
 import sys
 import time
+from typing import Any, List, Tuple
 
-from openpyxl import Workbook
+import pandas as pd
 
 from scripts import utils
 from scripts.config import ConfigManager
 from scripts.enums import MessageType, BusinessType, MessageLevel
 from scripts.features.co import order_discrepancy
 from scripts.features.co import server_order_detail_discrepancy
-from scripts.features.co.excel_reader import ExcelReader as CartonOrderExcelReader
+from scripts.features.co.co_excel_parser import create_parser, CartonOrder
+from scripts.features.co.co_process_list_convert import create_convert
 from scripts.message import MessageSender
+from scripts.work_flow_utils import create_work_flow_parser, CompanyHDProcessParser, CompanyRSProcessParser
 
 config_manager = ConfigManager(None)
 
@@ -46,23 +49,31 @@ data_conversion_result = [[
 reason_result = []
 
 
-def generate_conversion_file(carton_orders, conversion_dir, operation_file_name):
+def generate_conversion_file(carton_orders: List[CartonOrder], conversion_dir: str, operation_file_name: str) -> str | None:
     conversion_exception_data = []
+    process_parser = create_work_flow_parser()
     for carton_order in carton_orders:
         machine_tool = carton_order.machine_tool
-        original_work_flow = carton_order.process_flow
         if machine_tool is None or not machine_tool:
-            conversion_exception_data.append(carton_order.set_job_number + ": 缺少机床信息")
+            conversion_exception_data.append(carton_order.set_job_number + ": 缺少机床（设备）信息")
             continue
-        if any(keyword in machine_tool for keyword in utils.forbidden_keywords):
-            conversion_exception_data.append(carton_order.set_job_number + ": 机床信息为过滤入库、外协")
+        if isinstance(process_parser, CompanyHDProcessParser):
+            original_work_flow = carton_order.process_flow
+            if any(keyword in machine_tool for keyword in process_parser.FORBIDDEN_KEYWORDS):
+                conversion_exception_data.append(carton_order.set_job_number + ": 机床信息为过滤入库、外协")
+                continue
+            if original_work_flow is None or not original_work_flow:
+                conversion_exception_data.append(carton_order.set_job_number + ": 缺少工艺流程")
+                continue
+            work_flow_no = process_parser.format_process(original_work_flow)
+            process_name = process_parser.format_process(carton_order.original_machine if carton_order.original_machine else machine_tool)
+        elif isinstance(process_parser, CompanyRSProcessParser):
+            work_flow_no = ""
+            process_name = machine_tool if carton_order.process_type in process_parser.PROCESS_TYPE_CONVERT_MACHINE_TOOL else carton_order.process_type
+        else:
             continue
-        if original_work_flow is None or not original_work_flow:
-            conversion_exception_data.append(carton_order.set_job_number + ": 缺少工艺流程")
-            continue
+
         order_remarks = ";".join(str(x) for x in [carton_order.remarks, carton_order.process_description] if x is not None and x != "")
-        work_flow_no = utils.format_process(original_work_flow)
-        process_name = utils.format_process(carton_order.original_machine if carton_order.original_machine else machine_tool)
         data_conversion_result.append([
             carton_order.set_job_number,
             str(carton_order.delivery_date)[:19],
@@ -90,38 +101,16 @@ def generate_conversion_file(carton_orders, conversion_dir, operation_file_name)
     if len(data_conversion_result) <= 1:
         MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.INFO) \
             .send_message("转换数据为空，请关注。")
-        return
+        return None
 
     # 写入Excel文件
-    workbook = Workbook()
-    sheet = workbook.active
-    for row in data_conversion_result:
-        sheet.append(row)
     conversion_file_name = utils.generate_file_path(conversion_dir, operation_file_name)
-    workbook.save(conversion_file_name)
+    df = pd.DataFrame(data_conversion_result[1:], columns=data_conversion_result[0])
+    df.to_excel(conversion_file_name, index=False)
     return conversion_file_name
 
 
-def process_item(item, device_mapping_dict):
-    # 获取转换的设备
-    device_name = device_mapping_dict.get(item[9])
-    device_list = [] if device_name is None else [{"deviceName": device_name, "deviceScheduleQuantity": item[11]}]
-    if len(device_list) == 0:
-        MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.ERROR) \
-            .send_message("订单 {} 工序 {} 设备未匹配，请根据工序维护工艺流程转换表. ".format(item[0], item[9]))
-    process_list = [{
-        "processName": item[9],
-        "rpaScheduleNo": "" if item[13] is None else item[13],
-        "rpaMachineTool": "" if item[10] is None else item[10],
-        "deviceList": device_list,
-        "erpScheduleObjId": item[16],
-        "erpScheduleObjTime": item[15],
-        "erpProcessType": item[17]
-    }]
-    return process_list
-
-
-def synchronize_carton_order(export_file):
+def synchronize_carton_order(export_file: str) -> Tuple[Any | None, Any] | None:
     """
     同步纸箱订单
     :param export_file: RPA从ERP系统导出的原始纸箱订单Excel文件
@@ -129,17 +118,15 @@ def synchronize_carton_order(export_file):
     # 读取原始文件
     operation_file_name = str(int(time.mktime(time.localtime(time.time()))))
     co_export_file = utils.copy_and_rename_file(export_file, utils.generate_file_path(config_manager.get_co_export_dir(), operation_file_name))
-    excel_reader = CartonOrderExcelReader(co_export_file)
-    excel_reader.read_excel()
-    carton_orders = excel_reader.get_carton_orders()
+    carton_orders = create_parser(config_manager.get_org_id(), co_export_file).read_excel().get_carton_orders()
     if carton_orders is None or not carton_orders:
         MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.INFO).send_message("导出数据为空，请关注。")
-        return
+        return None
 
     conversion_file_name = generate_conversion_file(carton_orders, config_manager.get_co_conversion_dir(), operation_file_name)
-    if not conversion_file_name:
+    if conversion_file_name is None or not conversion_file_name:
         MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.ERROR).send_message("解析ERP导出文件出现异常，同步失败。")
-        return
+        return None
 
     print("开始同步, 待同步订单 {} 条".format(len(data_conversion_result) - 1))
     MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.INFO) \
@@ -150,10 +137,12 @@ def synchronize_carton_order(export_file):
     device_mapping_dict = dict(device_mapping)
 
     # 服务端订单对比，有变化的订单先撤单，再通过下面的逻辑补录进系统
-    server_order_detail_discrepancy.server_order_discrepancy(data_conversion_result)
+    if config_manager.get_erp_schedule_obj_id_expand_logic_flag():
+        server_order_detail_discrepancy.server_order_discrepancy(data_conversion_result)
 
     # 服务端订单同步
     # 定义每批发送的大小
+    process_list_convert = create_convert()
     batch_size = 100
     for i in range(1, len(data_conversion_result), batch_size):
         batch = data_conversion_result[i:i + batch_size]
@@ -177,7 +166,7 @@ def synchronize_carton_order(export_file):
                       "specification": "",
                       "orderRemark": item[7],
                       "workFlowNo": item[8],
-                      "processList": process_item(item, device_mapping_dict)} for item in batch]
+                      "processList": process_list_convert.get_process_list(item)} for item in batch]
 
         # 请求接口
         res = utils.requests_post(config_manager.get_synchronize_carton_order_url(), post_data)
@@ -212,15 +201,13 @@ def synchronize_carton_order(export_file):
         .send_message("同步结束, reason个数: {}, {}".format(len(reason_result), list(set(reason_result))))
 
     # 保存同步结果Excel文件
-    workbook = Workbook()
-    sheet = workbook.active
-    for row in data_sync_result:
-        sheet.append(row)
     result_file_name = utils.generate_file_path(config_manager.get_co_result_dir(), operation_file_name)
-    workbook.save(result_file_name)
+    df = pd.DataFrame(data_sync_result[1:], columns=data_sync_result[0])
+    df.to_excel(result_file_name, index=False)
 
     # 订单同步完成后，执行本地订单对比，把不存在的订单撤单
-    order_discrepancy.order_discrepancy(conversion_file_name)
+    if config_manager.get_erp_schedule_obj_id_expand_logic_flag():
+        order_discrepancy.order_discrepancy(conversion_file_name)
     return conversion_file_name, result_file_name
 
 

@@ -18,6 +18,9 @@ def server_order_discrepancy(data_conversion_result):
     for i in range(1, len(data_conversion_result), batch_size):
         batch = data_conversion_result[i:i + batch_size]
         print("服务端查询对比进度 {} ~ {}".format(i, i + batch_size - 1))
+        erp_schedule_obj_ids = [item[16] for item in batch if item[16] is not None and item[16]]
+        if len(erp_schedule_obj_ids) <= 0:
+            continue
         box_order_code_data = [item[0] for item in batch]
         result_data = query_order_detail(box_order_code_data)
         if result_data is not None and isinstance(result_data, list) and len(result_data) > 0:
@@ -26,6 +29,8 @@ def server_order_discrepancy(data_conversion_result):
                 box_order_code = item[0]
                 erp_schedule_obj_id = item[16]
                 erp_schedule_no = item[13]
+                if erp_schedule_obj_id is None or erp_schedule_no is None or not erp_schedule_obj_id or not erp_schedule_no:
+                    continue
                 desired_key = '_'.join([box_order_code, erp_schedule_obj_id])
                 schedule_no_desired_value = order_detail_dict.get(desired_key, "")
                 if schedule_no_desired_value == "" or schedule_no_desired_value == erp_schedule_no:

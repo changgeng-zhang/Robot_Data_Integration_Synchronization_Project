@@ -29,11 +29,13 @@
     }
   },
   "ignore_paperboard_process_flag": 1,
+  "ignore_carton_process_flag": 1,
+  "erp_schedule_obj_id_expand_logic_flag": 0,
   "retrieve_production_reports_limit": 5,
   "process_delimiter": [
     "-->"
   ],
   "working_directory": "/Users/changgeng.zhang/data/",
-  "machine_tool_equipment_mapping_file": "/Users/changgeng.zhang/data/恒大工艺流程转换表新.xlsx",
-  "machine_tool_process_type_mapping_file": "/Users/changgeng.zhang/data/恒大机床工序类型对应表.xlsx"
+  "machine_tool_equipment_mapping_file": "/Users/changgeng.zhang/data/HD工艺流程转换表新.xlsx",
+  "machine_tool_process_type_mapping_file": "/Users/changgeng.zhang/data/HD机床工序类型对应表.xlsx"
 }

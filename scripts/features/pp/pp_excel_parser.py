@@ -206,27 +206,9 @@ class ProductProfile:
         self.template_number = template_number
 
     def __str__(self):
-        return (f"customer_code: {self.customer_code}, "
-                f"customer_name: {self.customer_name}, "
-                f"product_number: {self.product_number}, "
-                f"specifications_models: {self.specifications_models}, "
-                f"product_type: {self.product_type}, "
-                f"box_type: {self.box_type}, "
-                f"corrugated_type: {self.corrugated_type}, "
-                f"printing_color1: {self.printing_color1}, "
-                f"printing_color2: {self.printing_color2}, "
-                f"printing_color3: {self.printing_color3}, "
-                f"printing_color4: {self.printing_color4}, "
-                f"printing_color5: {self.printing_color5}, "
-                f"printing_color6: {self.printing_color6}, "
-                f"printing_method: {self.printing_method}, "
-                f"unit_area: {self.unit_area}, "
-                f"processing_instructions: {self.processing_instructions}, "
-                f"technological_process: {self.technological_process}, "
-                f"specifications: {self.specifications}, "
-                f"material: {self.material}, "
-                f"plate_number: {self.plate_number}, "
-                f"template_number: {self.template_number}")
+        # 使用列表推导式构建键值对的字符串表示形式
+        attributes_str = ', '.join(f'{key}={value}' for key, value in self.__dict__.items())
+        return f'{self.__class__.__name__}({attributes_str})'
 
 
 def create_parser(org_id, file_path):
