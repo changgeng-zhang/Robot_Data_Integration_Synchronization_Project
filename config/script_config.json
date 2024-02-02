@@ -17,7 +17,7 @@
       "retrieve_production_reports": "https://digtest.ininin.com/dpsthird/api/v1/production/report_data"
     },
     "pp": {
-      "synchronize_product_profile": "https://digtest.ininin.com/dpsthird/api/v1/production/save_or_update"
+      "synchronize_product_profile": "https://digtest.ininin.com/dpsthird/api/v1/basic_product/save"
     },
     "po": {
       "synchronize_paperboard_order": "https://digtest.ininin.com/dpsthird/api/v1/production/paperboard_order/save_or_update"

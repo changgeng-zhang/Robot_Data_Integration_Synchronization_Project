@@ -37,3 +37,13 @@ robot_project/
 
 **requirements.txt**: 包含项目的依赖项列表，可用于安装所需的 Python 包。
 
+### 重点配置说明
+**ignore_paperboard_process_flag**: 1
+* 忽略纸板线工序，设置为True后由服务端过滤掉纸板线工序，注意RS不可设置为True
+
+**ignore_carton_process_flag**: 1,
+* 忽略纸箱订单工序流程，部份ERP的纸箱订单中没有工序流程信息，可设置为True后可不传递该参数，使用服务端产品档案的工序流程
+
+**erp_schedule_obj_id_expand_logic_flag**: 0,
+* 扩展ERP逻辑，依赖ERP中的OBJ ID字段，实现订单撤单
+

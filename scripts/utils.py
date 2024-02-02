@@ -2,7 +2,6 @@
 import hashlib
 import json
 import os
-import re
 import shutil
 import time
 from datetime import datetime
@@ -14,7 +13,6 @@ from tenacity import retry, stop_after_attempt
 from scripts.config import ConfigManager
 
 config_manager = ConfigManager(None)
-forbidden_keywords = ['入库', '外协']
 
 
 def common_utility_function():
@@ -106,33 +104,6 @@ def copy_and_rename_file(src_path, dest_path):
     return dest_path
 
 
-def format_process(input_string):
-    print(input_string)
-    process_delimiter = config_manager.get_process_delimiter()
-    if len(process_delimiter) <= 0:
-        return input_string
-
-    for delimiter in process_delimiter:
-        if delimiter in input_string:
-            # 使用正则表达式去掉括号内的数字
-            result_string = re.sub(r'\(\d+\)', '', input_string)
-            result_string = re.sub(r'\([0-9]+\s*:\s*[0-9]+\)', '', result_string)
-            result_string = re.sub(r'[(（]([^)）]+)[)）]', r'<\1>', result_string)
-            # 用 --> 分割字符串，并去掉首尾空格
-            process_array = [process.strip() for process in result_string.split(delimiter)]
-            # 移除特定的工序
-            process_array = [process for process in process_array if
-                             process not in [''] and not any(keyword in process for keyword in forbidden_keywords)]
-            # 用下划线连接数组中的元素
-            return '_'.join(process_array)
-    # 单工序去括号
-    # 使用正则表达式去掉括号内的数字
-    result_string = re.sub(r'\(\d+\)', '', input_string)
-    result_string = re.sub(r'\([0-9]+\s*:\s*[0-9]+\)', '', result_string)
-    result_string = re.sub(r'[(（]([^)）]+)[)）]', r'<\1>', result_string)
-    return result_string
-
-
 def replace_fullwidth_with_halfwidth(text):
     # 构建全角到半角的映射表
     fullwidth_chars = "，。！？（）［］《》：；－"
@@ -178,7 +149,8 @@ def requests_post(url, data):
                      "timestamp": timestamp,
                      "sign": sign,
                      "data": data,
-                     "ignorePaperboardProcessFlag": config_manager.get_ignore_paperboard_process_flag()}
+                     "ignorePaperboardProcessFlag": config_manager.get_ignore_paperboard_process_flag(),
+                     "ignoreEmptyWorkFlowNoFlag": config_manager.get_ignore_carton_process_flag()}
         return requests.post(url=url, headers=get_headers(), json=post_data, verify=False)
     except Exception as err:
         raise err
