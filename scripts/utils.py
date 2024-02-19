@@ -15,18 +15,24 @@ from scripts.config import ConfigManager
 config_manager = ConfigManager(None)
 
 
-def common_utility_function():
-    # 通用的功能函数
-    pass
+def md5(string_data: str) -> str:
+    """ 计算输入字符串的MD5值。
+    Args:
+      string_data: 要计算MD5值的输入字符串。
 
-
-def md5(string_data):
+    Returns:
+      输入字符串的MD5值。
+    """
     string = str(string_data).encode("utf8")
     str_md5 = hashlib.md5(string).hexdigest()
     return str(str_md5)
 
 
-def get_timestamp():
+def get_timestamp() -> str:
+    """ 计算当前时间的timestamp值
+    Returns:
+      当前时间的timestamp值
+    """
     t = time.time()
     timestamp = int(round(t * 1000))
     return str(timestamp)

@@ -2,9 +2,9 @@
 
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-from scripts.logger import setup_logger
+from scripts.logger import ScriptLogger
 
-logger = setup_logger()
+logger = ScriptLogger().logger
 
 
 def print_hi(name):
@@ -12,8 +12,8 @@ def print_hi(name):
     print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
     # 列表 a
     data_conversion_result = [[1, 'A', 10], [2, 'B', 20], [3, 'C', 30]]
-    print(data_conversion_result[0])
-    print(data_conversion_result[1:])
+    logger.info(data_conversion_result[0])
+    logger.info(data_conversion_result[1:])
 
 
 # Press the green button in the gutter to run the script.
