@@ -118,3 +118,4 @@ Execute Sync
 
 Handle Failure
     Log    查询纸板数据无
+    Fail    查询纸板数据无
