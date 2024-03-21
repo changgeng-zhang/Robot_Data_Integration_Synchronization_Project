@@ -55,13 +55,15 @@ def requests_post(url):
         raise err
 
 
-def convert_reporting_machine_tool(device_mapping_dict,
+def convert_reporting_machine_tool(process_source,
+                                   device_mapping_dict,
                                    reporting_device_name,
                                    scheduling_machine_tool,
                                    process_type_mapping_dict,
                                    scheduling_machine_tool_process_type):
     """
     根据实际的报工设备转换出对应的机床跟工序类型
+    :param process_source: 是否临时工序，1为临时工序
     :param device_mapping_dict: 机床设备映射字典
     :param reporting_device_name: 报工设备名称
     :param scheduling_machine_tool: 排程机床
@@ -70,9 +72,26 @@ def convert_reporting_machine_tool(device_mapping_dict,
     :return: 报工机床、报工工序类型与排程一致、实际报工工序类型
     """
     machine_tools = utils.find_keys_by_value(device_mapping_dict, reporting_device_name)
+
+    # 处理临时工序报工
+    if process_source == 1:
+        if machine_tools is None or not machine_tools:
+            return "", False, scheduling_machine_tool_process_type
+        for found_machine_tool in machine_tools:
+            if found_machine_tool in process_type_mapping_dict:
+                found_machine_tool_process_type = process_type_mapping_dict[found_machine_tool]
+                if str(found_machine_tool_process_type).strip() == str(scheduling_machine_tool_process_type).strip():
+                    return found_machine_tool, False, scheduling_machine_tool_process_type
+            else:
+                continue
+        # 循环完machine_tools还未正常返回，默认返回第一个machine_tools
+        return machine_tools[0], False, scheduling_machine_tool_process_type
+    # 非临时工序报工
     if machine_tools is None or not machine_tools:
+        # 机床/设备映射关系中，根据设备没有找到1~N个机床，返回排程机床及排程工序类型
         return scheduling_machine_tool, True, scheduling_machine_tool_process_type
     if scheduling_machine_tool in machine_tools:
+        # 根据设备找到1~N个机床，并且排程机床就在这个找到机床列表中，返回排程机床及排程工序类型
         return scheduling_machine_tool, True, scheduling_machine_tool_process_type
 
     # 换了生产设备
@@ -116,13 +135,12 @@ def generate_conversion_file(res_content):
     # 解析报工数据
     for result_item in res_content.get('resultData', []):
         box_order_code = result_item.get('boxOrderCode')
-        if box_order_code is None or box_order_code == "":
+        if not box_order_code:
             continue
-        # order_status = result_item.get('orderStatus')
-        # product_no = result_item.get('productNo')
-        # product_name = result_item.get('productName')
         for process_item in result_item.get('processes', []):
             process_name = process_item.get('processName')
+
+            # v1版本，erp特殊数据在processes结构内
             rpa_schedule_no = process_item.get('rpaScheduleNo')
             rpa_machine_tool = process_item.get('rpaMachineTool')
             erp_process_type = process_item.get('erpProcessType')
@@ -137,6 +155,14 @@ def generate_conversion_file(res_content):
                     start_production_date = class_item.get('startProductionDate')
                     class_name = class_item.get('className')
                     start_report_time = class_item.get('startReportTime')
+
+                    # v2版本，erp特殊数据在classes结构内，并且通过processSource来判断是否是临时工序
+                    process_source = class_item.get('processSource')
+                    if process_source is not None:
+                        rpa_schedule_no = class_item.get('rpaScheduleNo')
+                        rpa_machine_tool = class_item.get('rpaMachineTool')
+                        erp_process_type = class_item.get('erpProcessType')
+
                     # 格式化开始生产时间、报工时间
                     # 当平台报工没有开始生产时间时，开始生产时间等于报工时间
                     # 当开始生产时间大于报工时间，开始生产时间等于报工时间
@@ -148,6 +174,8 @@ def generate_conversion_file(res_content):
                         start_report_time = utils.format_datetime_f1(start_report_time)
                     else:
                         start_report_time = reporting_time
+
+                    # 报工人信息
                     person_datas = []
                     for person_item in class_item.get('reportingPersonList', []):
                         reporting_name = person_item.get('reportingName')
@@ -159,6 +187,7 @@ def generate_conversion_file(res_content):
                         person_datas.append(formatted_string)
 
                     reporting_machine_tool, process_type_different, reporting_machine_tool_process_type = convert_reporting_machine_tool(
+                        process_source,
                         device_mapping_dict,
                         device_name,
                         rpa_machine_tool,
@@ -182,7 +211,7 @@ def generate_conversion_file(res_content):
                         rpa_machine_tool,
                         '无',
                         start_report_time,
-                        erp_process_type,
+                        "" if process_source == 1 else erp_process_type,
                         reporting_machine_tool.replace('<', '(').replace('>', ')'),
                         process_type_different,
                         reporting_machine_tool_process_type
@@ -230,6 +259,7 @@ def parsing_results(response):
     if response.status_code == 200:
         try:
             res_content = response.json()
+            print(res_content)
             if res_content['resultCode'] != 1000:
                 MessageSender(MessageType.DINGTALK,
                               BusinessType.RETRIEVE_PRODUCTION_REPORTS.name,
