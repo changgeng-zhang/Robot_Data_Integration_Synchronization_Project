@@ -98,6 +98,9 @@ class ConfigManager:
     def get_machine_tool_process_type_mapping_file(self):
         return self.config_data.get('machine_tool_process_type_mapping_file', "")
 
+    def get_machine_tool_setting_file(self):
+        return self.config_data.get('machine_tool_setting_file', "")
+
     def get_working_directory(self):
         return self.config_data.get('working_directory', "")
 

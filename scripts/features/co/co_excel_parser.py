@@ -26,6 +26,7 @@ class CartonOrder:
         process_flow: 工艺流程
         original_machine: 原机台
         object_id: ObjID
+        machine_tool_remark: 机床备注
     """
 
     def __init__(self,
@@ -46,7 +47,8 @@ class CartonOrder:
                  machine_tool: float,
                  process_flow: str = None,
                  original_machine: str = None,
-                 object_id: str = None):
+                 object_id: str = None,
+                 machine_tool_remark: str = None):
         """构造函数，用于初始化对象。
 
         Args:
@@ -68,6 +70,7 @@ class CartonOrder:
             process_flow: 工艺流程
             original_machine: 原机台
             object_id: ObjID
+            machine_tool_remark: 机床备注
         """
         self.production_order_number = production_order_number
         self.set_job_number = set_job_number
@@ -87,6 +90,7 @@ class CartonOrder:
         self.process_flow = process_flow
         self.original_machine = original_machine
         self.object_id = object_id
+        self.machine_tool_remark = machine_tool_remark
 
     def __str__(self):
         # 使用列表推导式构建键值对的字符串表示形式
@@ -130,7 +134,8 @@ class CompanyHDExcelParser(ExcelParser):
         '机床',
         '工艺流程',
         '原机台',
-        'ObjID'
+        'ObjID',
+        '机床备注'
     ]
 
     def read_excel(self, headers=None, headers_row=2):

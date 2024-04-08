@@ -43,7 +43,8 @@ data_conversion_result = [[
     '纸板订单号',
     '定排号时间',
     'ObjID',
-    '工序类型'
+    '工序类型',
+    '机床备注'
 ]]
 
 reason_result = []
@@ -92,7 +93,8 @@ def generate_conversion_file(carton_orders: List[CartonOrder], conversion_dir: s
             carton_order.production_order_number,
             str(carton_order.scheduled_batch_time)[:19],
             carton_order.object_id,
-            carton_order.process_type
+            carton_order.process_type,
+            carton_order.machine_tool_remark
         ])
     if len(conversion_exception_data) > 1:
         print("待同步订单, 数据异常 {} 条, 如下: {}".format(len(conversion_exception_data), conversion_exception_data))

@@ -42,7 +42,8 @@ class CompanyHDProcessListConvert(ProcessListConvert):
             "deviceList": device_list,
             "erpScheduleObjId": "" if self.carton_order[16] is None or not self.carton_order[16] else self.carton_order[16],
             "erpScheduleObjTime": "" if self.carton_order[15] is None or not self.carton_order[15] else self.carton_order[15],
-            "erpProcessType": "" if self.carton_order[17] is None or not self.carton_order[17] else self.carton_order[17]
+            "erpProcessType": "" if self.carton_order[17] is None or not self.carton_order[17] else self.carton_order[17],
+            "erpMachineRemark": "" if self.carton_order[18] is None or not self.carton_order[18] else self.carton_order[18]
         }]
         return process_list
 

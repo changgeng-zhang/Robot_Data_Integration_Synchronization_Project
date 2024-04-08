@@ -5,7 +5,9 @@ import os
 import shutil
 import time
 from datetime import datetime
+from typing import Dict, Tuple, Any, List, Optional
 
+import pandas as pd
 import requests
 from openpyxl import load_workbook
 from tenacity import retry, stop_after_attempt
@@ -175,13 +177,58 @@ def compare_times(time_str1, time_str2):
     return time1 < time2
 
 
-def find_keys_by_value(dictionary, value):
-    return [key for key, val in dictionary.items() if val == value]
+def get_machine_setting_dicts(file_path: str) -> Tuple[Dict[str, str], Dict[str, str]]:
+    # 读取 Excel 文件
+    df = pd.read_excel(file_path)
+
+    # 使用字典推导式创建两个字典
+    machine_line_dict = {row['机床']: row['线别'] for _, row in df.iterrows()}
+    machine_process_dict = {row['机床']: row['工序类型'] for _, row in df.iterrows()}
+
+    return machine_line_dict, machine_process_dict
 
 
-def find_key_by_value(dictionary, value):
-    for key, val in dictionary.items():
+def find_keys_by_value(_dict: Dict[str, Any], value: Any) -> List[str]:
+    """
+    Find keys by value in a dictionary.
+
+    Args:
+        _dict (dict): The input dictionary.
+        value (Any): The value to search for.
+
+    Returns:
+        List[str]: A list of keys corresponding to the given value.
+    """
+    keys = [key for key, val in _dict.items() if val == value]
+    return keys
+
+
+def find_first_key_by_value(_dict: Dict[str, Any], value: Any) -> Optional[str]:
+    """
+    Find the first key by value in a dictionary.
+
+    Args:
+        _dict (dict): The input dictionary.
+        value (Any): The value to search for.
+
+    Returns:
+        Optional[str]: The first key corresponding to the given value, or None if no match is found.
+    """
+    for key, val in _dict.items():
         if val == value:
             return key
-    # 如果值不存在于字典中，返回 None 或者其他适当的默认值
     return None
+
+
+def format_machine_name(machine_names: List[str]) -> List[str]:
+    """
+    Format machine names by removing "--空开" part and remove duplicates.
+
+    Args:
+        machine_names (List[str]): List of machine names.
+
+    Returns:
+        List[str]: List of unique formatted machine names.
+    """
+    formatted_names = {name.split('--')[0].strip() for name in machine_names}
+    return list(formatted_names)

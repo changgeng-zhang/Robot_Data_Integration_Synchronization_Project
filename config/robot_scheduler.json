@@ -4,7 +4,7 @@
     "task_name": "产品档案同步",
     "cron_expression": "1,11,21,31,41,51 * * * *",
     "sub_process": "robot -P . --log log.txt --console verbose tests/wantit/test_product_profile.robot",
-    "run_status": "停止",
+    "run_status": "启动",
     "operator": ""
   },
   {
@@ -12,7 +12,7 @@
     "task_name": "纸箱订单同步",
     "cron_expression": "3,13,23,33,43,53 * * * *",
     "sub_process": "robot -P . --log log.txt --console verbose tests/wantit/test_carton_order.robot",
-    "run_status": "停止",
+    "run_status": "启动",
     "operator": ""
   },
   {
@@ -20,7 +20,7 @@
     "task_name": "纸板订单同步",
     "cron_expression": "5,15,25,35,45,55 * * * *",
     "sub_process": "robot -P . --log log.txt --console verbose tests/wantit/test_paperboard_order.robot",
-    "run_status": "停止",
+    "run_status": "启动",
     "operator": ""
   },
   {
@@ -28,7 +28,7 @@
     "task_name": "生产报工同步",
     "cron_expression": "*/1 * * * *",
     "sub_process": "robot -P . --log log.txt --console verbose tests/wantit/test_production_reports.robot",
-    "run_status": "启动",
+    "run_status": "停止",
     "operator": ""
   }
 ]

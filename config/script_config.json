@@ -2,9 +2,9 @@
   "device_identifier": "APPEND_1660661052",
   "profiles_active": "test",
   "enterprise": {
-    "app_id": 1660661052,
-    "secret_key": "dT7itcnk4PVN1Xks_111",
-    "org_id": 1451,
+    "app_id": 8144,
+    "secret_key": "dph4gjya5dsY91rH",
+    "org_id": 8144,
     "org_name": "功能开发测试"
   },
   "dingtalk_message": {
