@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Union
 
 import pandas as pd
 
@@ -205,9 +205,7 @@ class CompanyRSExcelParser(ExcelParser):
                     if carton_order.set_job_number is None or not carton_order.set_job_number:
                         continue
                     current_set_job_number = carton_order.set_job_number.upper()
-                    if current_set_job_number.startswith('Z') or (
-                            current_set_job_number.startswith('Y') and carton_order.process_type == "纸箱") or (
-                            current_set_job_number.startswith('C') and carton_order.process_type in ["印刷", "冲模"]):
+                    if self.is_valid_carton_order(current_set_job_number, carton_order):
                         carton_orders.append(carton_order)
                 except Exception as e:
                     print(f"特殊过滤Error: {e}")
@@ -216,11 +214,29 @@ class CompanyRSExcelParser(ExcelParser):
             print("Excel文件未读取。请先调用read_excel方法。")
             return None
 
+    @staticmethod
+    def is_valid_carton_order(current_set_job_number: str, carton_order: CartonOrder) -> bool:
+        if current_set_job_number.startswith('Z'):
+            return True
+        if current_set_job_number.startswith('Y') and carton_order.process_type == "纸箱":
+            return True
+        if current_set_job_number.startswith('C') and carton_order.process_type in ["印刷", "冲模"]:
+            return True
+        return False
 
-def create_parser(org_id, file_path):
-    if org_id in [7699, 1660661052]:
-        return CompanyHDExcelParser(file_path)
-    elif org_id == 1451:
-        return CompanyRSExcelParser(file_path)
+
+def create_parser(org_id: Union[str, int], file_path: str) -> Union[CompanyHDExcelParser, CompanyRSExcelParser]:
+    org_id = int(org_id) if isinstance(org_id, str) else org_id
+
+    parser_mapping = {
+        7699: CompanyHDExcelParser,
+        1660661052: CompanyHDExcelParser,
+        8684: CompanyRSExcelParser,
+        1695309907: CompanyRSExcelParser
+    }
+
+    parser_class = parser_mapping.get(org_id)
+    if parser_class:
+        return parser_class(file_path)
     else:
         raise ValueError("Invalid ORG ID")

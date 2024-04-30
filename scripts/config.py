@@ -62,6 +62,12 @@ class ConfigManager:
     def get_ignore_paperboard_process_flag(self):
         return bool(self.config_data.get('ignore_paperboard_process_flag', 0))
 
+    def get_enable_product_profile_fingerprint(self):
+        return bool(self.config_data.get('enable_product_profile_fingerprint', 0))
+
+    def get_enable_product_profile_process_card_upload(self):
+        return bool(self.config_data.get('enable_product_profile_process_card_upload', 0))
+
     def get_ignore_carton_process_flag(self):
         return bool(self.config_data.get('ignore_carton_process_flag', 0))
 
@@ -71,6 +77,9 @@ class ConfigManager:
     def get_process_delimiter(self):
         return self.config_data.get('process_delimiter', [])
 
+    def get_upload_drawings_url(self):
+        return self.config_data.get('server', {}).get('upload_drawings')
+
     def get_cancel_work_order_url(self):
         return self.config_data.get('server', {}).get('co', {}).get('cancel_work_order')
 
@@ -79,6 +88,12 @@ class ConfigManager:
 
     def get_synchronize_product_profile_url(self):
         return self.config_data.get('server', {}).get('pp', {}).get('synchronize_product_profile')
+
+    def get_bind_process_card_url(self):
+        return self.config_data.get('server', {}).get('pp', {}).get('bind_process_card')
+
+    def get_bind_production_drawings_url(self):
+        return self.config_data.get('server', {}).get('pp', {}).get('bind_production_drawings')
 
     def get_synchronize_paperboard_order_url(self):
         return self.config_data.get('server', {}).get('po', {}).get('synchronize_paperboard_order')
@@ -103,6 +118,9 @@ class ConfigManager:
 
     def get_working_directory(self):
         return self.config_data.get('working_directory', "")
+
+    def get_product_profile_production_drawings_directory(self):
+        return self.config_data.get('product_profile_production_drawings_directory', "")
 
     def get_pp_export_dir(self):
         return os.path.join(self.get_working_directory(), '产品档案', '导出文件')

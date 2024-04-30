@@ -1,11 +1,11 @@
 {
-  "device_identifier": "APPEND_1660661052",
+  "device_identifier": "APPEND_1695309907",
   "profiles_active": "test",
   "enterprise": {
-    "app_id": 8144,
-    "secret_key": "dph4gjya5dsY91rH",
-    "org_id": 8144,
-    "org_name": "功能开发测试"
+    "app_id": "1695309907",
+    "secret_key": "q6xqsjasgr73+2^3v5",
+    "org_id": "1695309907",
+    "org_name": "瑞森RPA升级功能开发测试"
   },
   "dingtalk_message": {
     "url": "https://oapi.dingtalk.com/robot/send?access_token=22e87275477779bd05a0754b677ef08c7ce785b8633b87b5d73fc27dcff04cc0",
@@ -17,7 +17,9 @@
       "retrieve_production_reports": "https://digtest.ininin.com/dpsthird/api/v1/production/report_data"
     },
     "pp": {
-      "synchronize_product_profile": "https://digtest.ininin.com/dpsthird/api/v1/basic_product/save"
+      "synchronize_product_profile": "https://digtest.ininin.com/dpsthird/api/v1/basic_product/save",
+      "bind_process_card": "https://digtest.ininin.com/dpsthird/api/v1/file/product_drawing_bind",
+      "bind_production_drawings": "https://digtest.ininin.com/dpsthird/api/v1/file/update_drawing_by_product"
     },
     "po": {
       "synchronize_paperboard_order": "https://digtest.ininin.com/dpsthird/api/v1/production/paperboard_order/save_or_update"
@@ -26,8 +28,11 @@
       "synchronize_carton_order": "https://digtest.ininin.com/dpsthird/api/v1/production/save_or_update",
       "cancel_work_order": "https://digtest.ininin.com/dpsthird/api/v1/production/order_process_cancel",
       "order_detail": "https://digtest.ininin.com/dpsthird/api/v1/production/order_detail"
-    }
+    },
+    "upload_drawings": "https://digtest.ininin.com/dpsthird/api/v1/file/upload"
   },
+  "enable_product_profile_fingerprint": 1,
+  "enable_product_profile_process_card_upload": 1,
   "ignore_paperboard_process_flag": 1,
   "ignore_carton_process_flag": 1,
   "erp_schedule_obj_id_expand_logic_flag": 0,
@@ -35,7 +40,8 @@
   "process_delimiter": [
     "-->"
   ],
-  "working_directory": "/Users/changgeng.zhang/data/",
-  "machine_tool_equipment_mapping_file": "/Users/changgeng.zhang/data/HD工艺流程转换表新.xlsx",
+  "working_directory": "/Users/changgeng.zhang/data/四川瑞森/",
+  "product_profile_production_drawings_directory": "/Users/changgeng.zhang/data/四川瑞森/",
+  "machine_tool_equipment_mapping_file": "/Users/changgeng.zhang/data/四川瑞森/机床设备特定转换表.xlsx",
   "machine_tool_process_type_mapping_file": "/Users/changgeng.zhang/data/HD机床工序类型对应表.xlsx"
 }

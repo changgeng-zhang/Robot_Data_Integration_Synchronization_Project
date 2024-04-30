@@ -142,10 +142,17 @@ def check_org_process_delimiter():
 
 def create_work_flow_parser(technological_process: str = None):
     org_id = config_manager.get_org_id()
-    if org_id in [7699, 1660661052]:
-        return CompanyHDProcessParser(technological_process) if technological_process is not None else CompanyHDProcessParser()
-    elif org_id == 1451:
-        return CompanyRSProcessParser(technological_process) if technological_process is not None else CompanyRSProcessParser()
+    org_id = int(org_id) if isinstance(org_id, str) else org_id
+    parser_mapping = {
+        7699: CompanyHDProcessParser,
+        1660661052: CompanyHDProcessParser,
+        8684: CompanyRSProcessParser,
+        1695309907: CompanyRSProcessParser
+    }
+
+    parser_class = parser_mapping.get(org_id)
+    if parser_class:
+        return parser_class(technological_process)
     else:
         raise ValueError("Invalid ORG ID")
 

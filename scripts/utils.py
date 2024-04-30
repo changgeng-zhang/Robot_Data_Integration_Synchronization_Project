@@ -55,6 +55,10 @@ def get_headers():
     return {"Content-Type": "application/json", "Charset": "UTF-8"}
 
 
+def get_file_upload_headers():
+    return {"Connection": "close"}
+
+
 def read_excel_tuple_list(excel_file, min_row):
     if excel_file is None or not excel_file:
         return []
@@ -164,6 +168,37 @@ def requests_post(url, data):
         raise err
 
 
+@retry(stop=stop_after_attempt(3))
+def requests_post_file(file: str):
+    timestamp = get_timestamp()
+    sign = get_sign(config_manager.get_secret_key(), None, timestamp, False)
+    try:
+        data = {"appId": config_manager.get_app_id(),
+                "timestamp": timestamp,
+                "sign": sign}
+        file_name = os.path.basename(file)
+        files = {"file": (file_name, open(file, "rb"), "pdf/jpeg/jpg/png/webp/bmp/gif")}
+
+        return requests.post(url=config_manager.get_upload_drawings_url(), headers=get_file_upload_headers(), data=data, files=files, verify=False)
+    except Exception as err:
+        raise err
+
+
+@retry(stop=stop_after_attempt(3))
+def requests_post_binding_file(url: str, data):
+    timestamp = get_timestamp()
+    sign = get_sign(config_manager.get_secret_key(), data, timestamp, False)
+    try:
+        post_data = {"appId": config_manager.get_app_id(),
+                     "timestamp": timestamp,
+                     "sign": sign,
+                     "data": data}
+        print(post_data)
+        return requests.post(url=url, headers=get_headers(), json=post_data, verify=False)
+    except Exception as err:
+        raise err
+
+
 def compare_times(time_str1, time_str2):
     if time_str1 is None or not time_str1:
         return False
@@ -232,3 +267,14 @@ def format_machine_name(machine_names: List[str]) -> List[str]:
     """
     formatted_names = {name.split('--')[0].strip() for name in machine_names}
     return list(formatted_names)
+
+
+def timestamp_to_datetime(timestamp_ms: str) -> datetime:
+    # 将毫秒转换为秒
+    timestamp_ms = int(timestamp_ms) if isinstance(timestamp_ms, str) else timestamp_ms
+    timestamp_s = timestamp_ms / 1000
+
+    # 将时间戳转换为日期时间对象
+    dt_object = datetime.fromtimestamp(timestamp_s)
+
+    return dt_object

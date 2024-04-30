@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 import pandas as pd
 
@@ -211,10 +212,18 @@ class ProductProfile:
         return f'{self.__class__.__name__}({attributes_str})'
 
 
-def create_parser(org_id, file_path):
-    if org_id in [7699, 1660661052]:
-        return CompanyHDExcelParser(file_path)
-    elif org_id == 1451:
-        return CompanyRSExcelParser(file_path)
+def create_parser(org_id: Union[str, int], file_path: str) -> Union[CompanyHDExcelParser, CompanyRSExcelParser]:
+    org_id = int(org_id) if isinstance(org_id, str) else org_id
+
+    parser_mapping = {
+        7699: CompanyHDExcelParser,
+        1660661052: CompanyHDExcelParser,
+        8684: CompanyRSExcelParser,
+        1695309907: CompanyRSExcelParser
+    }
+
+    parser_class = parser_mapping.get(org_id)
+    if parser_class:
+        return parser_class(file_path)
     else:
         raise ValueError("Invalid ORG ID")

@@ -249,14 +249,15 @@ def generate_conversion_file(res_content):
                         formatted_string = '_'.join([value for value in [reporting_name, position, erp_user_code] if value])
                         person_datas.append(formatted_string)
 
-                    reporting_machine_tool, process_type_different, reporting_process_type = convert_reporting_machine_tool(process_source,
-                                                                                                                            erp_machine_remark,
-                                                                                                                            device_name,
-                                                                                                                            rpa_machine_tool,
-                                                                                                                            erp_process_type,
-                                                                                                                            machine_line_dict,
-                                                                                                                            machine_process_dict
-                                                                                                                            )
+                    reporting_machine_tool, process_type_different, reporting_process_type = convert_reporting_machine_tool(
+                        process_source,
+                        erp_machine_remark,
+                        device_name,
+                        rpa_machine_tool,
+                        erp_process_type,
+                        machine_line_dict,
+                        machine_process_dict
+                    )
                     data_conversion_result.append([
                         box_order_code,
                         process_name,

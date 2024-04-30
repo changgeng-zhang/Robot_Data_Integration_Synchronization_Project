@@ -53,26 +53,34 @@ class CompanyRSProcessListConvert(ProcessListConvert):
     def get_process_list(self, carton_order: List) -> List | None:
         if carton_order is not None:
             self.carton_order = carton_order
-        device_name = self.device_mapping_dict.get(self.carton_order[9])
+        device_name = self.device_mapping_dict.get(self.carton_order[10])
         if device_name is None or not device_name:
-            device_name = self.carton_order[9]
+            device_name = self.carton_order[10]
         device_list = [{"deviceName": device_name, "deviceScheduleQuantity": self.carton_order[11]}]
         process_list = [{
-            "processName": self.carton_order[9],
-            "rpaScheduleNo": "" if self.carton_order[13] is None or not self.carton_order[13] else self.carton_order[13],
-            "rpaMachineTool": "" if self.carton_order[10] is None or not self.carton_order[10] else self.carton_order[10],
+            "processName": self.carton_order[9] or "",
+            "rpaScheduleNo": self.carton_order[13] or "",
+            "rpaMachineTool": self.carton_order[10] or "",
             "deviceList": device_list,
-            "erpScheduleObjTime": "" if self.carton_order[15] is None or not self.carton_order[15] else self.carton_order[15],
-            "erpProcessType": "" if self.carton_order[17] is None or not self.carton_order[17] else self.carton_order[17]
+            "erpScheduleObjTime": self.carton_order[15] if self.carton_order[15] and self.carton_order[15] != 'NaT' else "",
+            "erpProcessType": self.carton_order[17] or ""
         }]
+        print(process_list)
         return process_list
 
 
 def create_convert(carton_order: List = None, device_file_path: str = None):
     org_id = config_manager.get_org_id()
-    if org_id in [7699, 1660661052]:
-        return CompanyHDProcessListConvert(carton_order, device_file_path)
-    elif org_id == 1451:
-        return CompanyRSProcessListConvert(carton_order, device_file_path)
+    org_id = int(org_id) if isinstance(org_id, str) else org_id
+    converter_mapping = {
+        7699: CompanyHDProcessListConvert,
+        1660661052: CompanyHDProcessListConvert,
+        8684: CompanyRSProcessListConvert,
+        1695309907: CompanyRSProcessListConvert
+    }
+
+    converter_class = converter_mapping.get(org_id)
+    if converter_class:
+        return converter_class(carton_order, device_file_path)
     else:
         raise ValueError("Invalid ORG ID")
