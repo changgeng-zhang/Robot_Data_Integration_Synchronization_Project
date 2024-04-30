@@ -1,5 +1,6 @@
 import fcntl
 import os
+import threading
 import time
 
 import requests
@@ -31,7 +32,7 @@ def upload_production_drawings(file: str):
         response = utils.requests_post_file(file)
         response.raise_for_status()  # 检查响应状态码
         json_data = response.json()
-        logger.info(json_data)
+        logger.info(f"产品档案上传生产图纸，文件：{file}，结果：{json_data}")
         if json_data.get("resultCode") == 1000:
             file_name = json_data.get("resultData", {}).get("name", "")
             file_url = json_data.get("resultData", {}).get("url", "")
@@ -62,7 +63,7 @@ def binding_production_drawings(product_no: str, file_name: str, file_url: str) 
         response = utils.requests_post_binding_file(config_manager.get_bind_production_drawings_url(), data)
         response.raise_for_status()  # 检查响应状态码
         json_data = response.json()
-        logger.info(json_data)
+        logger.info(f"产品档案{product_no}绑定生产图纸，结果：{json_data}")
         if json_data.get("resultCode") == 1000:
             return True
         logger.info(f"绑定生产图纸失败，信息：{json_data}")
@@ -216,16 +217,24 @@ def on_moved(event):
 
 class ProductionDrawingsHandler(FileSystemEventHandler):
     def on_created(self, event):
-        on_created(event)
+        # on_created(event)
+        upload_thread = threading.Thread(target=on_created, args=(event,))
+        upload_thread.start()
 
     def on_modified(self, event):
-        on_modified(event)
+        # on_modified(event)
+        upload_thread = threading.Thread(target=on_modified, args=(event,))
+        upload_thread.start()
 
     def on_deleted(self, event):
-        on_deleted(event)
+        # on_deleted(event)
+        upload_thread = threading.Thread(target=on_deleted, args=(event,))
+        upload_thread.start()
 
     def on_moved(self, event):
-        on_moved(event)
+        # on_moved(event)
+        upload_thread = threading.Thread(target=on_moved, args=(event,))
+        upload_thread.start()
 
 
 if __name__ == "__main__":

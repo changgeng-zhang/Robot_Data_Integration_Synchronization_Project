@@ -193,7 +193,6 @@ def requests_post_binding_file(url: str, data):
                      "timestamp": timestamp,
                      "sign": sign,
                      "data": data}
-        print(post_data)
         return requests.post(url=url, headers=get_headers(), json=post_data, verify=False)
     except Exception as err:
         raise err

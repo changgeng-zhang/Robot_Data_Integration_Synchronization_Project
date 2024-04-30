@@ -197,9 +197,12 @@ def synchronize_product_profile(export_file: str):
                 data_sync_result.append([item[1], f"Failed to retrieve data. Status code: {res.status_code}"])
 
     # 将同步成功的产品档案连同指纹信息更新到数据库
+    process_card_pending_download = sync_success_products
     if config_manager.get_enable_product_profile_fingerprint() and sync_success_products and fingerprints:
         filtered_fingerprints = [f for f in fingerprints if f[0] in sync_success_products]
         product_profile_fingerprint.save_fingerprint(filtered_fingerprints)
+        # 待下载工艺卡的产品编号
+        process_card_pending_download = product_profile_fingerprint.load_fingerprints_by_upload_status(1)
 
     # 输出 reason
     # 使用 set 进行去重，然后转回为列表
@@ -212,7 +215,8 @@ def synchronize_product_profile(export_file: str):
     result_file_name = utils.generate_file_path(config_manager.get_pp_result_dir(), operation_file_name)
     df = pd.DataFrame(data_sync_result[1:], columns=data_sync_result[0])
     df.to_excel(result_file_name, index=False)
-    return sync_success_products
+    logger.info(f"产品档案同步成功，编号如下：{process_card_pending_download}，如果开启工艺卡同步RPA将执行工艺卡下载。")
+    return process_card_pending_download
 
 
 if __name__ == "__main__":
