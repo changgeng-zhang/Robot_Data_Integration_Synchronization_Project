@@ -181,7 +181,7 @@ def load_fingerprints_by_upload_status(re_upload: int):
     product_nos = []
     for fingerprint in product_profile_fingerprint_db.get_by_re_upload(re_upload):
         # 产品编号
-        product_no = fingerprint[0]
+        product_no = fingerprint[1]
         product_nos.append(product_no)
 
     # 关闭数据库连接

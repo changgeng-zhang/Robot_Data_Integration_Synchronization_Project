@@ -6,6 +6,7 @@ from enum import Enum, auto
 class MessageType(Enum):
     EMAIL = auto()
     DINGTALK = auto()
+    WORK_WEIXIN = auto()
 
 
 class MessageLevel(Enum):

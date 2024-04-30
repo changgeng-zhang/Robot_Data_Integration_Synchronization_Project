@@ -11,6 +11,7 @@
     "url": "https://oapi.dingtalk.com/robot/send?access_token=22e87275477779bd05a0754b677ef08c7ce785b8633b87b5d73fc27dcff04cc0",
     "secret": "SEC55f4e1776fe98bf69014c24ae24e7da58554c7ff8b0ec362f3fa4c76070f99a0_1"
   },
+  "work_weixin_webhook": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=69c977bc-8755-4692-b66a-a1971a55731c",
   "server": {
     "pr": {
       "synchronize_operation_results": "https://digtest.ininin.com/dpsthird/api/v1/production/sync_erp_report",

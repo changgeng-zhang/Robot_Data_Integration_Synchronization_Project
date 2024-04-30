@@ -41,6 +41,9 @@ class ConfigManager:
     def get_dingtalk_message(self):
         return self.config_data.get('dingtalk_message', {}).get('url'), self.config_data.get('dingtalk_message', {}).get('secret')
 
+    def get_work_weixin_webhook_url(self):
+        return self.config_data.get('work_weixin_webhook', "")
+
     def get_app_id(self):
         return self.config_data.get('enterprise', {}).get('app_id', "")
 

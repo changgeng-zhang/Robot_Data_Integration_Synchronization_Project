@@ -198,9 +198,10 @@ def synchronize_product_profile(export_file: str):
 
     # 将同步成功的产品档案连同指纹信息更新到数据库
     process_card_pending_download = sync_success_products
-    if config_manager.get_enable_product_profile_fingerprint() and sync_success_products and fingerprints:
-        filtered_fingerprints = [f for f in fingerprints if f[0] in sync_success_products]
-        product_profile_fingerprint.save_fingerprint(filtered_fingerprints)
+    if config_manager.get_enable_product_profile_fingerprint():
+        if sync_success_products and fingerprints:
+            filtered_fingerprints = [f for f in fingerprints if f[0] in sync_success_products]
+            product_profile_fingerprint.save_fingerprint(filtered_fingerprints)
         # 待下载工艺卡的产品编号
         process_card_pending_download = product_profile_fingerprint.load_fingerprints_by_upload_status(1)
 

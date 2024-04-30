@@ -37,9 +37,12 @@ def requests_get():
 
 
 def call_a_every_second():
-    while True:
-        requests_get()  # 调用方法
-        time.sleep(1)  # 等待 1 秒钟
+    try:
+        while True:
+            requests_get()  # 调用方法
+            time.sleep(1)  # 等待 1 秒钟
+    except KeyboardInterrupt as err:
+        print("Requests stop.")
 
 
 # 调用每秒调用一次 a 方法的函数

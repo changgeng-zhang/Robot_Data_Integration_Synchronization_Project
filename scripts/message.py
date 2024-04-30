@@ -77,6 +77,24 @@ def send_email(sender_email, email_password, receiver_email, subject, body):
         print(f"邮件发送失败，错误信息：{e}")
 
 
+def send_work_weixin_message(content):
+    """
+    构建企微消息内容
+    :param content: 消息内容
+    :return:
+    """
+    message_url = config_manager.get_work_weixin_webhook_url()
+    post_json = {
+        "msgtype": "text",
+        "text": {
+            "content": content
+        }
+    }
+    data = json.dumps(post_json).encode("utf-8")
+    res = requests.post(url=message_url, data=data, headers=utils.get_headers())
+    return res.text
+
+
 class MessageSender:
     """
     消息处理类
@@ -106,6 +124,8 @@ class MessageSender:
         if self.message_type == MessageType.EMAIL:
             print("EMAIL消息类型暂未实现。")
         elif self.message_type == MessageType.DINGTALK:
-            send_dingtalk_message(formatted_message_text, None)
+            send_work_weixin_message(formatted_message_text)
+        elif self.message_type == MessageType.WORK_WEIXIN:
+            send_work_weixin_message(formatted_message_text)
         else:
             print("消息类型暂未开放。")

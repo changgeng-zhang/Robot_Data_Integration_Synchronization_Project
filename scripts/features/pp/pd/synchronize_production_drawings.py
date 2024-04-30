@@ -218,23 +218,23 @@ def on_moved(event):
 class ProductionDrawingsHandler(FileSystemEventHandler):
     def on_created(self, event):
         # on_created(event)
-        upload_thread = threading.Thread(target=on_created, args=(event,))
-        upload_thread.start()
+        created_thread = threading.Thread(target=on_created, args=(event,))
+        created_thread.start()
 
     def on_modified(self, event):
         # on_modified(event)
-        upload_thread = threading.Thread(target=on_modified, args=(event,))
-        upload_thread.start()
+        modified_thread = threading.Thread(target=on_modified, args=(event,))
+        modified_thread.start()
 
     def on_deleted(self, event):
         # on_deleted(event)
-        upload_thread = threading.Thread(target=on_deleted, args=(event,))
-        upload_thread.start()
+        deleted_thread = threading.Thread(target=on_deleted, args=(event,))
+        deleted_thread.start()
 
     def on_moved(self, event):
         # on_moved(event)
-        upload_thread = threading.Thread(target=on_moved, args=(event,))
-        upload_thread.start()
+        moved_thread = threading.Thread(target=on_moved, args=(event,))
+        moved_thread.start()
 
 
 if __name__ == "__main__":

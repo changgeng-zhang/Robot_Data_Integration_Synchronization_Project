@@ -134,10 +134,6 @@ def synchronize_carton_order(export_file: str) -> Tuple[Any | None, Any] | None:
     MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.INFO) \
         .send_message("开始同步, 文件: {}, 待同步 {} 条".format(conversion_file_name, len(data_conversion_result) - 1))
 
-    # 获取机台设备映射关系
-    device_mapping = utils.read_excel_tuple_list(config_manager.get_machine_tool_equipment_mapping_file(), 2)
-    device_mapping_dict = dict(device_mapping)
-
     # 服务端订单对比，有变化的订单先撤单，再通过下面的逻辑补录进系统
     if config_manager.get_erp_schedule_obj_id_expand_logic_flag():
         server_order_detail_discrepancy.server_order_discrepancy(data_conversion_result)
