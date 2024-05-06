@@ -110,9 +110,13 @@ def save_fingerprint(fingerprints):
     modify_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # 插入或更新数据
+    process_card_url = ''
     for fingerprint in fingerprints:
         # 新增或修改
-        product_profile_fingerprint_db.insert_or_update_data(fingerprint, modify_time, 1, '')
+        re_upload = 1
+        if fingerprint[0] and fingerprint[0].startswith("P"):
+            re_upload = 2
+        product_profile_fingerprint_db.insert_or_update_data(fingerprint, modify_time, re_upload, process_card_url)
 
     # 关闭数据库连接
     product_profile_fingerprint_db.close_connection()
