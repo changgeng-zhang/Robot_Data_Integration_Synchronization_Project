@@ -187,7 +187,7 @@ class CompanyRSExcelParser(ExcelParser):
         self.df = self.df.fillna("")
         return self
 
-    def get_carton_orders(self) -> List[CartonOrder] | None:
+    def get_carton_orders(self) -> Union[List[CartonOrder], None]:
         if self.df is not None:
             carton_orders = []
             for _, row in self.df.iterrows():

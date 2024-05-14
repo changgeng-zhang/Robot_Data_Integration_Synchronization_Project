@@ -17,7 +17,6 @@ from scripts.message import MessageSender
 from scripts.work_flow_utils import create_work_flow_parser
 
 config_manager = ConfigManager(None)
-
 logger = ScriptLogger().logger
 
 # 档案同步结果表头
