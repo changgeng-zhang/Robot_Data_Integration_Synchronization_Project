@@ -83,16 +83,18 @@ def binding_production_drawings(product_no: str, file_name: str, file_url: str) 
 
 
 def synchronize_production_drawings(file_path: str):
+    # 获取
     try:
-        logger.info(f"开始同步产品档案生产图纸，文件：{file_path}")
-        product_no = extract_prefix(file_path)
+        normalized_path = os.path.normpath(file_path)
+        logger.info(f"开始同步产品档案生产图纸，文件位于：{normalized_path}")
+        product_no = extract_prefix(normalized_path)
         logger.info(f"解析产品档案编号：{product_no}")
         if not product_no:
             logger.info(f"产品档案编号判定为空")
             return
 
         # 上传生产图纸
-        file_name, file_url = upload_production_drawings(file_path)
+        file_name, file_url = upload_production_drawings(normalized_path)
         if not file_name or not file_url:
             logger.info(f"同步产品档案生产图纸，上传文件失败，编号：{product_no}")
             return

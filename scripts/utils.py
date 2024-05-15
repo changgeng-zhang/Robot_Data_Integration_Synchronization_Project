@@ -173,13 +173,26 @@ def requests_post_file(file: str):
     timestamp = get_timestamp()
     sign = get_sign(config_manager.get_secret_key(), None, timestamp, False)
     try:
-        data = {"appId": config_manager.get_app_id(),
-                "timestamp": timestamp,
-                "sign": sign}
+        data = {
+            "appId": config_manager.get_app_id(),
+            "timestamp": timestamp,
+            "sign": sign
+        }
         file_name = os.path.basename(file)
-        files = {"file": (file_name, open(file, "rb"), "pdf/jpeg/jpg/png/webp/bmp/gif")}
 
-        return requests.post(url=config_manager.get_upload_drawings_url(), headers=get_file_upload_headers(), data=data, files=files, verify=False)
+        with open(file, "rb") as file_obj:
+            files = {
+                "file": (file_name, file_obj, "pdf/jpeg/jpg/png/webp/bmp/gif")
+            }
+            response = requests.post(
+                url=config_manager.get_upload_drawings_url(),
+                headers=get_file_upload_headers(),
+                data=data,
+                files=files,
+                verify=False
+            )
+
+        return response
     except Exception as err:
         raise err
 
