@@ -8,3 +8,4 @@ pandas
 apscheduler
 PyQt5
 watchdog
+opencv-python

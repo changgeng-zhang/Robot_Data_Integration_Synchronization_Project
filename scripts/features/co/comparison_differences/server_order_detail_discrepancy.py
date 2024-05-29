@@ -5,7 +5,7 @@ import requests
 from scripts import utils
 from scripts.config import ConfigManager
 from scripts.enums import MessageType, BusinessType, MessageLevel
-from scripts.features.co import order_discrepancy
+from scripts.features.co.comparison_differences import order_discrepancy
 from scripts.message import MessageSender
 
 config_manager = ConfigManager(None)

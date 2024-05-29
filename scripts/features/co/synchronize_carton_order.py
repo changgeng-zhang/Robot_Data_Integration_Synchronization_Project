@@ -9,14 +9,17 @@ import pandas as pd
 from scripts import utils
 from scripts.config import ConfigManager
 from scripts.enums import MessageType, BusinessType, MessageLevel
-from scripts.features.co import order_discrepancy
-from scripts.features.co import server_order_detail_discrepancy
 from scripts.features.co.co_excel_parser import create_parser, CartonOrder
 from scripts.features.co.co_process_list_convert import create_convert
+from scripts.features.co.comparison_differences import server_order_detail_discrepancy, order_discrepancy
+from scripts.features.co.expansion.expand_process_card import expand_process_card
+from scripts.features.co.expansion.expand_production_drawings import expand_production_drawings
+from scripts.logger import ScriptLogger
 from scripts.message import MessageSender
 from scripts.work_flow_utils import create_work_flow_parser, CompanyHDProcessParser, CompanyRSProcessParser
 
 config_manager = ConfigManager(None)
+logger = ScriptLogger().logger
 
 # 订单同步结果表头
 data_sync_result = [[
@@ -47,7 +50,10 @@ data_conversion_result = [[
     '机床备注'
 ]]
 
+# 同步异常结果
 reason_result = []
+# 同步成功
+sync_success_orders = []
 
 
 def generate_conversion_file(carton_orders: List[CartonOrder], conversion_dir: str, operation_file_name: str) -> str | None:
@@ -70,7 +76,8 @@ def generate_conversion_file(carton_orders: List[CartonOrder], conversion_dir: s
             process_name = process_parser.format_process(carton_order.original_machine if carton_order.original_machine else machine_tool)
         elif isinstance(process_parser, CompanyRSProcessParser):
             work_flow_no = ""
-            process_name = machine_tool if carton_order.process_type in process_parser.PROCESS_TYPE_CONVERT_MACHINE_TOOL else carton_order.process_type
+            # process_name = machine_tool if carton_order.process_type in process_parser.PROCESS_TYPE_CONVERT_MACHINE_TOOL else carton_order.process_type
+            process_name = machine_tool
         else:
             continue
 
@@ -97,7 +104,7 @@ def generate_conversion_file(carton_orders: List[CartonOrder], conversion_dir: s
             carton_order.machine_tool_remark
         ])
     if len(conversion_exception_data) > 1:
-        print("待同步订单, 数据异常 {} 条, 如下: {}".format(len(conversion_exception_data), conversion_exception_data))
+        logger.info("待同步订单, 数据异常 {} 条, 如下: {}".format(len(conversion_exception_data), conversion_exception_data))
         MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.INFO) \
             .send_message("待同步数据校验异常 {} 条, 如下: {}".format(len(conversion_exception_data), conversion_exception_data))
     if len(data_conversion_result) <= 1:
@@ -130,7 +137,7 @@ def synchronize_carton_order(export_file: str) -> Tuple[Any | None, Any] | None:
         MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.ERROR).send_message("解析ERP导出文件出现异常，同步失败。")
         return None
 
-    print("开始同步, 待同步订单 {} 条".format(len(data_conversion_result) - 1))
+    logger.info("开始同步, 待同步订单 {} 条".format(len(data_conversion_result) - 1))
     MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.INFO) \
         .send_message("开始同步, 文件: {}, 待同步 {} 条".format(conversion_file_name, len(data_conversion_result) - 1))
 
@@ -144,7 +151,7 @@ def synchronize_carton_order(export_file: str) -> Tuple[Any | None, Any] | None:
     batch_size = 100
     for i in range(1, len(data_conversion_result), batch_size):
         batch = data_conversion_result[i:i + batch_size]
-        print("同步进度 {} ~ {}".format(i, i + batch_size - 1))
+        logger.info("同步进度 {} ~ {}".format(i, i + batch_size - 1))
         # 将嵌套列表转为 JSON 格式的字符串
         post_data = [{"operationType": int(1),
                       "paperboardOrderCode": item[14],
@@ -178,25 +185,27 @@ def synchronize_carton_order(export_file: str) -> Tuple[Any | None, Any] | None:
                         reason = result_item.get('reason')
                         if ct_state is not None and ct_state == 2:
                             data_sync_result.append([box_order_code, reason])
-                            reason_result.append(reason)
+                            reason_result.append([box_order_code, reason.replace(f"【{box_order_code}】", "")])
                         else:
                             data_sync_result.append([box_order_code, '成功'])
+                            sync_success_orders.append(box_order_code)
                 else:
                     for item in batch:
-                        data_sync_result.append([item[1], response_content['resultMsg']])
+                        data_sync_result.append([item[0], response_content['resultMsg']])
             except json.decoder.JSONDecodeError as e:
                 for item in batch:
-                    data_sync_result.append([item[1], f"Error decoding JSON: {e}"])
+                    data_sync_result.append([item[0], f"Error decoding JSON: {e}"])
         else:
-            print(f"Failed to retrieve data. Status code: {res.status_code}")
+            logger.error(f"Failed to retrieve data. Status code: {res.status_code}")
             for item in batch:
-                data_sync_result.append([item[1], f"Failed to retrieve data. Status code: {res.status_code}"])
+                data_sync_result.append([item[0], f"Failed to retrieve data. Status code: {res.status_code}"])
 
     # 输出 reason
     # 使用 set 进行去重，然后转回为列表
-    print("同步结束, 服务端返回reason个数: {}, 去重后包含: {}".format(len(reason_result), list(set(reason_result))))
+    logger.info("同步结束, 服务端返回reason个数: {}".format(len(reason_result)))
     MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.INFO) \
-        .send_message("同步结束, reason个数: {}, {}".format(len(reason_result), list(set(reason_result))))
+        .send_message("同步结束, reason个数: {}".format(len(reason_result)))
+    send_reason_message()
 
     # 保存同步结果Excel文件
     result_file_name = utils.generate_file_path(config_manager.get_co_result_dir(), operation_file_name)
@@ -206,7 +215,33 @@ def synchronize_carton_order(export_file: str) -> Tuple[Any | None, Any] | None:
     # 订单同步完成后，执行本地订单对比，把不存在的订单撤单
     if config_manager.get_erp_schedule_obj_id_expand_logic_flag():
         order_discrepancy.order_discrepancy(conversion_file_name)
+
+    # 工艺卡同步：订单补充流程
+    expand_process_card(sync_success_orders, data_conversion_result)
+    # 图纸同步：订单补充流程
+    expand_production_drawings(sync_success_orders, data_conversion_result)
+
     return conversion_file_name, result_file_name
+
+
+def send_reason_message():
+    # 创建一个字典来分组数据
+    grouped_data = {}
+
+    for item in reason_result:
+        order_id, reason = item
+        if reason not in grouped_data:
+            grouped_data[reason] = []
+        grouped_data[reason].append(order_id)
+
+    # 生成输出字符串
+    output_parts = []
+    for reason, order_ids in grouped_data.items():
+        order_ids_str = "，".join(order_ids)
+        output_parts.append(f"{reason}：{order_ids_str}")
+
+    for part in output_parts:
+        MessageSender(MessageType.DINGTALK, BusinessType.SYNCHRONIZE_CARTON_ORDER.name, MessageLevel.INFO).send_message(part)
 
 
 if __name__ == "__main__":

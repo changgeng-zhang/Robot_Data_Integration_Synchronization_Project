@@ -119,8 +119,7 @@ class MessageSender:
         business = BusinessType.find_name_by_member(self.business_type)
         if org_name is None:
             return
-        formatted_message_text = f"{formatted_time} {self.message_level.name.upper()} {org_name} {device_identifier} [{business}] \n {message_text}"
-        print(formatted_message_text)
+        formatted_message_text = f"{formatted_time} {self.message_level.name.upper()} {org_name} {device_identifier} [{business}]\n{message_text}"
         if self.message_type == MessageType.EMAIL:
             print("EMAIL消息类型暂未实现。")
         elif self.message_type == MessageType.DINGTALK:

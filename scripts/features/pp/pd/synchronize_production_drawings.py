@@ -83,7 +83,6 @@ def binding_production_drawings(product_no: str, file_name: str, file_url: str) 
 
 
 def synchronize_production_drawings(file_path: str):
-    # 获取
     try:
         normalized_path = os.path.normpath(file_path)
         logger.info(f"开始同步产品档案生产图纸，文件位于：{normalized_path}")
